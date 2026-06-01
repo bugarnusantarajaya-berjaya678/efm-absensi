@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>EFM — Sistem Absensi Pelatih</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #1E1C43;
+      --navy2: #2a2860;
+      --orange: #E05945;
+      --orange2: #f07060;
+      --bg: #f0f0f6;
+      --white: #ffffff;
+      --gray: #64748b;
+      --light: #f8fafc;
+      --border: #e2e8f0;
+      --green: #22c55e;
+      --green-bg: #f0fdf4;
+      --green-text: #166534;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: #1e293b;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ============ PAGES ============ */
+    .page { display: none; min-height: 100vh; flex-direction: column; }
+    .page.active { display: flex; }
+
+    /* ============ TOPBAR ============ */
+    .topbar {
+      background: var(--navy);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: var(--orange);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .logo-text { color: white; }
+    .logo-text strong { display: block; font-size: 14px; font-weight: 600; line-height: 1.2; }
+    .logo-text span { font-size: 10px; color: rgba(255,255,255,0.6); }
+    .topbar-btn {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      border-radius: 8px;
+      padding: 7px 9px;
+      cursor: pointer;
+      font-size: 18px;
+      color: white;
+      line-height: 1;
+    }
+
+    /* ============ HERO ============ */
+    .hero {
+      background: var(--navy);
+      padding: 24px 20px 52px;
+      color: white;
+    }
+    .hero h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+    .hero p { font-size: 13px; color: rgba(255,255,255,0.65); }
+
+    /* ============ CARD BODY ============ */
+    .card-body {
+      background: var(--white);
+      border-radius: 24px 24px 0 0;
+      margin-top: -24px;
+      padding: 24px 20px 100px;
+      flex: 1;
+    }
+
+    /* ============ LABELS & INPUTS ============ */
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .field select,
+    .field input {
+      width: 100%;
+      padding: 13px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      background: var(--light);
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      color: #1e293b;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field select:focus,
+    .field input:focus { border-color: var(--navy); }
+    .field input[readonly] {
+      background: #f1f5f9;
+      color: var(--gray);
+      cursor: default;
+    }
+
+    /* ============ PIN INPUT ============ */
+    .pin-hint {
+      background: #EEEEF5;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+    }
+    .pin-hint p { font-size: 12px; color: var(--navy); line-height: 1.6; }
+    .pin-hint strong { color: var(--orange); }
+
+    /* ============ BUTTONS ============ */
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 14px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--orange); color: white; margin-bottom: 10px; }
+    .btn-secondary { background: var(--navy); color: white; margin-bottom: 10px; }
+    .btn-outline {
+      background: transparent;
+      color: var(--navy);
+      border: 1.5px solid var(--navy);
+      margin-bottom: 10px;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-sm {
+      width: auto;
+      padding: 10px 20px;
+      font-size: 13px;
+      border-radius: 10px;
+    }
+
+    /* ============ STATS GRID ============ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--light);
+      border-radius: 14px;
+      padding: 16px;
+      border: 1px solid var(--border);
+    }
+    .stat-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    .stat-num {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-label { font-size: 11px; color: var(--gray); }
+
+    /* ============ BIG BUTTONS ============ */
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-family: 'Poppins', sans-serif;
+      transition: opacity 0.2s;
+    }
+    .action-btn:active { opacity: 0.85; }
+    .action-btn-primary { background: var(--navy); }
+    .action-btn-secondary { background: var(--light); border: 1px solid var(--border); }
+    .action-icon {
+      width: 46px; height: 46px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .action-text strong { display: block; font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .action-text span { font-size: 12px; }
+    .action-arr { margin-left: auto; font-size: 18px; }
+
+    /* ============ ACTIVITY ============ */
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin: 20px 0 10px;
+    }
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .activity-text { flex: 1; font-size: 13px; }
+    .activity-sub { font-size: 11px; color: var(--gray); }
+    .activity-time { font-size: 11px; color: var(--gray); }
+
+    /* ============ QR SCAN ============ */
+    .qr-box {
+      background: var(--light);
+      border: 2px dashed var(--border);
+      border-radius: 18px;
+      padding: 32px 20px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .qr-box .qr-icon { font-size: 60px; margin-bottom: 12px; }
+    .qr-box p { font-size: 13px; color: var(--gray); margin-bottom: 16px; line-height: 1.6; }
+
+    /* ============ INFO BOX ============ */
+    .info-box {
+      display: flex;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+    .info-box-icon { font-size: 18px; flex-shrink: 0; }
+    .info-box p { font-size: 12px; line-height: 1.6; }
+    .info-navy { background: #EEEEF5; }
+    .info-navy p { color: var(--navy); }
+    .info-orange { background: #FDF0EE; }
+    .info-orange p { color: #9a3a28; }
+    .info-green { background: var(--green-bg); }
+    .info-green p { color: var(--green-text); }
+    .info-red { background: #fef2f2; }
+    .info-red p { color: #991b1b; }
+
+    /* ============ ORDER CARD ============ */
+    .order-card {
+      background: #EEEEF5;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+      border-left: 4px solid var(--navy);
+    }
+    .order-card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .order-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    .order-row span { font-size: 12px; color: var(--gray); }
+    .order-row strong { font-size: 12px; color: var(--navy); text-align: right; max-width: 55%; }
+
+    /* ============ PHOTO UPLOAD ============ */
+    .photo-upload {
+      border: 2px dashed var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      position: relative;
+    }
+    .photo-upload:hover { border-color: var(--navy); }
+    .photo-upload input[type=file] {
+      position: absolute; inset: 0;
+      opacity: 0; cursor: pointer;
+      width: 100%; height: 100%;
+    }
+    .photo-upload .upload-icon { font-size: 32px; margin-bottom: 8px; }
+    .photo-upload p { font-size: 13px; color: var(--gray); }
+    .photo-upload small { font-size: 11px; color: var(--border); }
+    #photo-preview {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 14px;
+      display: none;
+      border: 2px solid var(--border);
+    }
+
+    /* ============ GPS BADGE ============ */
+    .gps-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      font-size: 12px;
+    }
+    .gps-badge span { font-size: 16px; }
+
+    /* ============ HISTORY ============ */
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 16px;
+      scrollbar-width: none;
+    }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .filter-chip {
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      border: none;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+    }
+    .filter-chip.active { background: var(--navy); color: white; }
+    .filter-chip:not(.active) { background: var(--light); color: var(--gray); border: 1px solid var(--border); }
+
+    .rekap-card {
+      background: var(--light);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+    }
+    .rekap-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .rekap-header h3 { font-size: 14px; font-weight: 600; color: var(--navy); }
+    .rekap-header small { font-size: 11px; color: var(--gray); }
+    .rekap-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .rekap-stat { text-align: center; }
+    .rekap-stat strong { display: block; font-size: 15px; font-weight: 700; color: var(--navy); }
+    .rekap-stat span { font-size: 10px; color: var(--gray); }
+    .progress-bar {
+      height: 5px;
+      background: var(--border);
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .progress-fill { height: 100%; background: var(--orange); border-radius: 5px; }
+    .progress-fill.done { background: var(--green); }
+
+    .sesi-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .sesi-item:last-child { border-bottom: none; }
+    .sesi-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+      color: white;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .sesi-info { flex: 1; }
+    .sesi-info p { font-size: 12px; font-weight: 500; margin-bottom: 1px; }
+    .sesi-info small { font-size: 11px; color: var(--gray); }
+    .sesi-foto {
+      font-size: 11px;
+      color: var(--navy);
+      text-decoration: none;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .rekening-box {
+      background: #EEEEF5;
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-top: 8px;
+    }
+    .rekening-box p { font-size: 11px; color: var(--navy); font-weight: 600; margin-bottom: 4px; }
+    .rekening-box small { font-size: 12px; color: var(--navy); line-height: 1.6; display: block; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .badge-green { background: var(--green-bg); color: var(--green-text); }
+    .badge-orange { background: #FDF0EE; color: #9a3a28; }
+    .badge-navy { background: #EEEEF5; color: var(--navy); }
+
+    /* ============ BOTTOM NAV ============ */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      border-top: 1px solid var(--border);
+      display: flex;
+      padding: 8px 0 env(safe-area-inset-bottom, 8px);
+      z-index: 200;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 0;
+      font-family: 'Poppins', sans-serif;
+    }
+    .nav-item .nav-icon { font-size: 22px; }
+    .nav-item .nav-label { font-size: 10px; color: var(--gray); font-weight: 500; }
+    .nav-item.active .nav-icon { color: var(--navy); }
+    .nav-item.active .nav-label { color: var(--navy); font-weight: 700; }
+    .nav-item:not(.active) .nav-icon { color: #cbd5e1; }
+
+    /* ============ MODAL SUCCESS ============ */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: white;
+      border-radius: 24px;
+      padding: 36px 28px;
+      text-align: center;
+      width: 100%;
+      max-width: 360px;
+    }
+    .modal-box .modal-icon { font-size: 64px; margin-bottom: 16px; }
+    .modal-box h2 { font-size: 20px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+    .modal-box p { font-size: 13px; color: var(--gray); line-height: 1.6; margin-bottom: 24px; }
+
+    /* ============ MESSAGE ============ */
+    .msg {
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-top: 10px;
+      display: none;
+    }
+    .msg.show { display: block; }
+    .msg-error { background: #fef2f2; color: #991b1b; }
+    .msg-success { background: var(--green-bg); color: var(--green-text); }
+    .msg-info { background: #EEEEF5; color: var(--navy); }
+
+    /* ============ SPINNER ============ */
+    .spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ============ LOADING SCREEN ============ */
+    #loading-screen {
+      position: fixed; inset: 0;
+      background: var(--navy);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.4s;
+    }
+    #loading-screen .load-logo { font-size: 56px; margin-bottom: 16px; }
+    #loading-screen h1 { color: white; font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    #loading-screen p { color: rgba(255,255,255,0.5); font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loading-screen">
+  <div class="load-logo">💪</div>
+  <h1>Essential Fitness</h1>
+  <p>Management System</p>
+</div>
+
+<!-- ============================================================
+     PAGE: LOGIN
+     ============================================================ -->
+<div class="page" id="page-login">
+  <div class="hero" style="padding-top: 48px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;">
+      <div class="logo-icon">💪</div>
+      <div class="logo-text">
+        <strong>Essential Fitness</strong>
+        <span>Management System</span>
+      </div>
+    </div>
+    <h1>Selamat datang,<br>Pelatih EFM 👋</h1>
+    <p style="margin-top:6px;">Masuk untuk mulai absensi sesi latihan</p>
+  </div>
+  <div class="card-body" style="padding-bottom: 40px;">
+    <div class="field">
+      <label>Pilih nama kamu</label>
+      <select id="login-select">
+        <option value="">— Pilih nama pelatih —</option>
+      </select>
+    </div>
+
+    <div class="pin-hint">
+      <p>PIN kamu = <strong>Kode PIC + Tanggal Lahir</strong><br>
+      Contoh: BGS + 090192 = <strong>BGS090192</strong></p>
+    </div>
+
+    <div class="field">
+      <label>Masukkan PIN</label>
+      <input type="password" id="login-pin" placeholder="Contoh: BGS090192" autocomplete="off">
+    </div>
+
+    <button class="btn btn-primary" id="btn-login" onclick="doLogin()">
+      🔐 Masuk
+    </button>
+
+    <div class="msg" id="login-msg"></div>
+
+    <p style="text-align:center;font-size:12px;color:var(--gray);margin-top:16px;">
+      Lupa PIN? Hubungi admin EFM<br>
+      <strong style="color:var(--navy);">0811-1992-0666</strong>
+    </p>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE: DASHBOARD
+     ============================================================ -->
+<div class="page" id="page-dashboard">
+  <div class="topbar">
+    <div class="topbar-logo">
+      <div class="logo-icon" style="width:30px;height:30px;font-size:15px;">💪</div>
+      <div class="logo-text">
+        <strong style="font-size:13px;">EFM Trainer</strong>
+      </div>
+    </div>
+    <button class="topbar-btn" onclick="doLogout()">🚪</button>
+  </div>
+  <div class="hero">
+    <h1 id="dash-greeting">Halo, Pelatih! 👋</h1>
+    <p id="dash-date">Senin, 2 Juni 2026</p>
+  </div>
+  <div class="card-body">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#EEEEF5;">📅</div>
+        <div class="stat-num" id="dash-total-sesi">—</div>
+        <div class="stat-label">Sesi bulan ini</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#FDF0EE;">💰</div>
+        <div class="stat-num" id="dash-total-bayar">—</div>
+        <div class="stat-label">Total bayaran</div>
+      </div>
+    </div>
+
+    <div class="section-title">Aksi cepat</div>
+
+    <button class="action-btn action-btn-primary" onclick="goToScan()">
+      <div class="action-icon" style="background:var(--orange);">📷</div>
+      <div class="action-text">
+        <strong style="color:white;">Scan QR Klien</strong>
+        <span style="color:rgba(255,255,255,0.6);">Mulai absensi sesi latihan</span>
+      </div>
+      <div class="action-arr" style="color:rgba(255,255,255,0.4);">›</div>
+    </button>
+
+    <button class="action-btn action-btn-secondary" onclick="showPage('history')">
+      <div class="action-icon" style="background:#EEEEF5;">📋</div>
+      <div class="action-text">
+        <strong style="color:var(--navy);">Riwayat Absensi</strong>
+        <span style="color:var(--gray);">Lihat sesi dan rekap bayaran</span>
+      </div>
+      <div class="action-arr" style="color:var(--gray);">›</div>
+    </button>
+
+    <div class="section-title">Absensi terakhir</div>
+    <div id="dash-recent">
+      <div style="text-align:center;padding:20px;color:var(--gray);font-size:13px;">
+        Memuat data...
+      </div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="showPage('dashboard')">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-label">Home</div>
+    </button>
+    <button class="nav-item" onclick="goToScan()">
+      <div class="nav-icon">📷</div>
+      <div class="nav-label">Scan</div>
+    </button>
+    <button class="nav-item" onclick="showPage('history')">
+      <div class="nav-icon">📋</div>
+      <div class="nav-label">History</div>
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE: SCAN QR
+     ============================================================ -->
+<div class="page" id="page-scan">
+  <div class="topbar">
+    <button class="topbar-btn" onclick="showPage('dashboard')">‹</button>
+    <div style="color:white;font-size:15px;font-weight:600;">Scan QR Klien</div>
+    <div style="width:36px;"></div>
+  </div>
+  <div style="background:var(--navy);padding:16px 20px 48px;">
+    <p style="color:rgba(255,255,255,0.65);font-size:13px;">Minta klien tunjukkan QR barcode-nya</p>
+  </div>
+  <div class="card-body">
+    <div class="qr-box">
+      <div class="qr-icon">📸</div>
+      <p>Arahkan kamera HP kamu ke<br>QR barcode milik klien</p>
+      <button class="btn btn-primary btn-sm" onclick="openCamera()" style="margin:0 auto;">
+        📷 Buka Kamera
+      </button>
+    </div>
+
+    <div class="info-box info-navy">
+      <div class="info-box-icon">🔒</div>
+      <p>QR klien hanya berisi <strong>Order ID</strong>. PIN kamu tidak pernah ada di QR klien — data kamu tetap aman.</p>
+    </div>
+
+    <div class="info-box info-orange">
+      <div class="info-box-icon">📍</div>
+      <p>Pastikan kamu sudah berada di <strong>lokasi klien</strong> sebelum scan. GPS akan divalidasi otomatis.</p>
+    </div>
+
+    <div style="margin-top:8px;">
+      <div class="section-title">Atau input manual</div>
+      <div class="field">
+        <label>Order ID</label>
+        <input type="text" id="manual-order-id" placeholder="Contoh: PP-IV-2026-0004" style="text-transform:uppercase;">
+      </div>
+      <button class="btn btn-outline" onclick="goToAbsenManual()">
+        ⌨️ Lanjut dengan Order ID ini
+      </button>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="showPage('dashboard')">
+      <div class="nav-icon">🏠</div><div class="nav-label">Home</div>
+    </button>
+    <button class="nav-item active">
+      <div class="nav-icon">📷</div><div class="nav-label">Scan</div>
+    </button>
+    <button class="nav-item" onclick="showPage('history')">
+      <div class="nav-icon">📋</div><div class="nav-label">History</div>
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE: FORM ABSENSI
+     ============================================================ -->
+<div class="page" id="page-absen">
+  <div class="topbar">
+    <button class="topbar-btn" onclick="showPage('scan')">‹</button>
+    <div style="color:white;font-size:15px;font-weight:600;">Form Absensi</div>
+    <div style="width:36px;"></div>
+  </div>
+  <div style="background:var(--navy);padding:16px 20px 48px;">
+    <p style="color:rgba(255,255,255,0.65);font-size:13px;" id="absen-order-label">Order ID: —</p>
+  </div>
+  <div class="card-body">
+
+    <!-- ORDER INFO -->
+    <div id="absen-order-card" style="display:none;">
+      <div class="order-card">
+        <h3>✅ <span id="absen-client-name">—</span></h3>
+        <div class="order-row"><span>Program</span><strong id="absen-program">—</strong></div>
+        <div class="order-row"><span>Lokasi</span><strong id="absen-lokasi">—</strong></div>
+        <div class="order-row"><span>Jadwal</span><strong id="absen-jadwal">—</strong></div>
+      </div>
+    </div>
+
+    <div id="absen-order-loading" class="info-box info-navy">
+      <div class="info-box-icon">⏳</div>
+      <p>Memvalidasi Order ID...</p>
+    </div>
+
+    <!-- PIC INFO -->
+    <div class="field">
+      <label>Kode PIC</label>
+      <input type="text" id="absen-kode-pic" readonly>
+    </div>
+    <div class="field">
+      <label>Nama PIC</label>
+      <input type="text" id="absen-nama-pic" readonly>
+    </div>
+
+    <!-- GPS STATUS -->
+    <div id="gps-status" class="gps-badge" style="background:#f1f5f9;">
+      <span>📍</span>
+      <p style="font-size:12px;color:var(--gray);">Mendeteksi lokasi GPS...</p>
+    </div>
+
+    <!-- PHOTO -->
+    <div class="section-title">Foto Kehadiran</div>
+    <img id="photo-preview" src="" alt="preview foto">
+    <div class="photo-upload" id="photo-upload-area">
+      <input type="file" id="photo-input" accept="image/*" capture="environment" onchange="handlePhoto(event)">
+      <div class="upload-icon">📷</div>
+      <p>Tap untuk ambil foto atau pilih dari galeri</p>
+      <small>Foto wajib diupload</small>
+    </div>
+
+    <button class="btn btn-primary" id="btn-submit" onclick="submitAbsensi()">
+      ✅ Submit Absensi
+    </button>
+
+    <div class="msg" id="absen-msg"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     PAGE: HISTORY
+     ============================================================ -->
+<div class="page" id="page-history">
+  <div class="topbar">
+    <div class="topbar-logo">
+      <div class="logo-icon" style="width:30px;height:30px;font-size:15px;">💪</div>
+      <div class="logo-text">
+        <strong style="font-size:13px;">Riwayat Absensi</strong>
+      </div>
+    </div>
+    <button class="topbar-btn" onclick="doLogout()">🚪</button>
+  </div>
+  <div class="hero">
+    <h1 id="hist-nama">—</h1>
+    <p id="hist-kode">—</p>
+  </div>
+  <div class="card-body">
+    <div id="hist-loading" class="info-box info-navy">
+      <div class="info-box-icon">⏳</div>
+      <p>Memuat riwayat absensi...</p>
+    </div>
+    <div id="hist-content" style="display:none;"></div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="showPage('dashboard')">
+      <div class="nav-icon">🏠</div><div class="nav-label">Home</div>
+    </button>
+    <button class="nav-item" onclick="goToScan()">
+      <div class="nav-icon">📷</div><div class="nav-label">Scan</div>
+    </button>
+    <button class="nav-item active">
+      <div class="nav-icon">📋</div><div class="nav-label">History</div>
+    </button>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="modal-overlay" id="success-modal">
+  <div class="modal-box">
+    <div class="modal-icon">✅</div>
+    <h2>Absensi Berhasil!</h2>
+    <p>Data kehadiran kamu sudah tersimpan di sistem EFM.</p>
+    <button class="btn btn-primary" onclick="closeSuccessModal()">Selesai</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const API_URL = 'https://script.google.com/macros/s/AKfycbw9x7h3ybotWARoncs4nh12Q9dAZCUEMA5tfRkErVelDs58xbGIH9ZgOhN-DooJ9QALZg/exec';
+const COOKIE_KEY = 'EFM_SESSION';
+const COOKIE_DAYS = 1;
+
+// ============================================================
+// STATE
+// ============================================================
+let STATE = {
+  token: null,
+  kodePIC: null,
+  namaPanggil: null,
+  namaLengkap: null,
+  spesialis: null,
+  bank: null, cabang: null, rekening: null, atasNama: null,
+  currentOrderId: null,
+  currentOrderData: null,
+  gpsLat: null, gpsLng: null,
+  historyData: null
+};
+
+// ============================================================
+// COOKIE HELPERS
+// ============================================================
+function setCookie(name, value, days) {
+  const d = new Date();
+  d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+  document.cookie = name + '=' + encodeURIComponent(value) + ';expires=' + d.toUTCString() + ';path=/;SameSite=Strict';
+}
+function getCookie(name) {
+  const ca = document.cookie.split(';');
+  for (let c of ca) {
+    c = c.trim();
+    if (c.startsWith(name + '=')) return decodeURIComponent(c.substring(name.length + 1));
+  }
+  return null;
+}
+function deleteCookie(name) {
+  document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+}
+
+// ============================================================
+// API HELPER
+// ============================================================
+async function api(params) {
+  const url = API_URL + '?' + new URLSearchParams(params).toString();
+  const res = await fetch(url);
+  return res.json();
+}
+async function apiPost(body) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+// ============================================================
+// PAGE NAVIGATION
+// ============================================================
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const el = document.getElementById('page-' + id);
+  if (el) {
+    el.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+}
+
+// ============================================================
+// SHOW MESSAGE
+// ============================================================
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'msg show msg-' + type;
+}
+function hideMsg(id) {
+  const el = document.getElementById(id);
+  if (el) el.className = 'msg';
+}
+
+// ============================================================
+// INIT — cek session saat load
+// ============================================================
+async function init() {
+  // Cek URL untuk order ID (dari scan QR)
+  const urlParams = new URLSearchParams(window.location.search);
+  const orderFromUrl = urlParams.get('order') || urlParams.get('id');
+
+  // Cek cookie session
+  const savedSession = getCookie(COOKIE_KEY);
+
+  if (savedSession) {
+    try {
+      const session = JSON.parse(savedSession);
+      // Validasi token ke server
+      const res = await api({ action: 'validateToken', token: session.token });
+      if (res.valid) {
+        // Session masih valid
+        STATE.token = session.token;
+        STATE.kodePIC = res.kodePIC;
+        STATE.namaPanggil = res.namaPanggil;
+        STATE.namaLengkap = res.namaLengkap;
+        STATE.spesialis = res.spesialis;
+        STATE.bank = res.bank;
+        STATE.cabang = res.cabang;
+        STATE.rekening = res.rekening;
+        STATE.atasNama = res.atasNama;
+
+        hideLanding();
+
+        if (orderFromUrl) {
+          // Ada order ID dari scan QR → langsung ke form absensi
+          goToAbsen(orderFromUrl);
+        } else {
+          loadDashboard();
+          showPage('dashboard');
+        }
+        return;
+      }
+    } catch(e) {}
+  }
+
+  // Tidak ada session valid → load login
+  hideLanding();
+  await loadCoachList();
+
+  if (orderFromUrl) {
+    // Simpan order ID, nanti setelah login langsung ke absensi
+    STATE.currentOrderId = orderFromUrl;
+  }
+
+  showPage('login');
+}
+
+function hideLanding() {
+  const ls = document.getElementById('loading-screen');
+  ls.style.opacity = '0';
+  setTimeout(() => ls.style.display = 'none', 400);
+}
+
+// ============================================================
+// LOAD COACH LIST
+// ============================================================
+async function loadCoachList() {
+  try {
+    const res = await api({ action: 'getCoachList' });
+    if (!res.success) return;
+    const select = document.getElementById('login-select');
+    res.data.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.kodePIC;
+      opt.textContent = c.nama + ' (' + c.kodePIC + ')';
+      select.appendChild(opt);
+    });
+  } catch(e) {}
+}
+
+// ============================================================
+// LOGIN
+// ============================================================
+async function doLogin() {
+  const kodePIC = document.getElementById('login-select').value;
+  const pin = document.getElementById('login-pin').value.trim();
+  hideMsg('login-msg');
+
+  if (!kodePIC) return showMsg('login-msg', '⚠️ Pilih nama pelatih dulu', 'error');
+  if (!pin) return showMsg('login-msg', '⚠️ Masukkan PIN dulu', 'error');
+
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Memverifikasi...';
+
+  try {
+    const res = await api({ action: 'login', kodePIC, pin });
+
+    if (!res.success) {
+      showMsg('login-msg', '❌ ' + res.message, 'error');
+      btn.disabled = false;
+      btn.innerHTML = '🔐 Masuk';
+      return;
+    }
+
+    // Simpan state
+    STATE.token = res.token;
+    STATE.kodePIC = res.kodePIC;
+    STATE.namaPanggil = res.namaPanggil;
+    STATE.namaLengkap = res.namaLengkap;
+    STATE.spesialis = res.spesialis;
+    STATE.bank = res.bank;
+    STATE.cabang = res.cabang;
+    STATE.rekening = res.rekening;
+    STATE.atasNama = res.atasNama;
+
+    // Simpan cookie
+    setCookie(COOKIE_KEY, JSON.stringify({ token: res.token }), COOKIE_DAYS);
+
+    btn.disabled = false;
+    btn.innerHTML = '🔐 Masuk';
+
+    // Kalau ada order ID tersimpan → langsung ke absensi
+    if (STATE.currentOrderId) {
+      goToAbsen(STATE.currentOrderId);
+    } else {
+      loadDashboard();
+      showPage('dashboard');
+    }
+
+  } catch(e) {
+    showMsg('login-msg', '❌ Gagal koneksi. Coba lagi.', 'error');
+    btn.disabled = false;
+    btn.innerHTML = '🔐 Masuk';
+  }
+}
+
+// ============================================================
+// LOGOUT
+// ============================================================
+async function doLogout() {
+  if (!confirm('Yakin mau keluar?')) return;
+  try { await api({ action: 'logout', token: STATE.token }); } catch(e) {}
+  deleteCookie(COOKIE_KEY);
+  STATE = { token:null, kodePIC:null, namaPanggil:null, namaLengkap:null };
+  showPage('login');
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+async function loadDashboard() {
+  // Greeting
+  const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const now = new Date();
+  document.getElementById('dash-greeting').textContent =
+    'Halo, ' + (STATE.namaPanggil || 'Pelatih') + '! 👋';
+  document.getElementById('dash-date').textContent =
+    hari[now.getDay()] + ', ' + now.getDate() + ' ' + bulan[now.getMonth()] + ' ' + now.getFullYear();
+
+  // Load history untuk stats
+  try {
+    const res = await api({ action: 'getHistory', token: STATE.token, kodePIC: STATE.kodePIC });
+    if (res.success) {
+      STATE.historyData = res;
+
+      // Hitung sesi bulan ini
+      const thisMonth = now.getMonth();
+      const thisYear = now.getFullYear();
+      let sesiCount = 0;
+      let totalBayar = 0;
+
+      res.data.forEach(p => {
+        p.sesiList.forEach(s => {
+          const d = new Date(s.timestamp);
+          if (d.getMonth() === thisMonth && d.getFullYear() === thisYear) {
+            sesiCount++;
+            totalBayar += p.biayaPerSesi;
+          }
+        });
+      });
+
+      document.getElementById('dash-total-sesi').textContent = sesiCount;
+      document.getElementById('dash-total-bayar').textContent =
+        sesiCount > 0 ? formatRupiah(totalBayar) : 'Rp 0';
+
+      // Recent activity
+      const recent = [];
+      res.data.forEach(p => {
+        p.sesiList.forEach(s => {
+          recent.push({ ...s, clientName: p.clientName, lokasi: p.lokasi });
+        });
+      });
+      recent.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      const recentEl = document.getElementById('dash-recent');
+      if (recent.length === 0) {
+        recentEl.innerHTML = '<p style="text-align:center;font-size:13px;color:var(--gray);padding:16px;">Belum ada absensi</p>';
+      } else {
+        recentEl.innerHTML = recent.slice(0, 3).map(s => `
+          <div class="activity-item">
+            <div class="activity-dot" style="background:var(--green);"></div>
+            <div>
+              <div class="activity-text">${s.clientName} — ${s.lokasi}</div>
+              <div class="activity-sub">${s.tanggal}, ${s.jam}</div>
+            </div>
+            <div class="activity-time">HADIR</div>
+          </div>
+        `).join('');
+      }
+    }
+  } catch(e) {
+    document.getElementById('dash-total-sesi').textContent = '—';
+    document.getElementById('dash-total-bayar').textContent = '—';
+  }
+}
+
+// ============================================================
+// SCAN / ABSEN
+// ============================================================
+function goToScan() {
+  showPage('scan');
+  document.getElementById('manual-order-id').value = '';
+}
+
+function openCamera() {
+  alert('Gunakan kamera HP kamu untuk scan QR barcode klien.\n\nQR klien akan otomatis membuka halaman absensi ini.\n\nAtau gunakan input manual di bawah.');
+}
+
+function goToAbsenManual() {
+  const orderId = document.getElementById('manual-order-id').value.trim().toUpperCase();
+  if (!orderId) return alert('Masukkan Order ID terlebih dahulu');
+  goToAbsen(orderId);
+}
+
+async function goToAbsen(orderId) {
+  STATE.currentOrderId = orderId;
+
+  // Fill PIC info dari state
+  document.getElementById('absen-kode-pic').value = STATE.kodePIC || '';
+  document.getElementById('absen-nama-pic').value = STATE.namaPanggil || '';
+  document.getElementById('absen-order-label').textContent = 'Order ID: ' + orderId;
+
+  // Reset form
+  document.getElementById('absen-order-card').style.display = 'none';
+  document.getElementById('absen-order-loading').style.display = 'flex';
+  document.getElementById('photo-preview').style.display = 'none';
+  document.getElementById('photo-input').value = '';
+  hideMsg('absen-msg');
+
+  showPage('absen');
+
+  // Ambil GPS
+  getGPS();
+
+  // Load order data
+  try {
+    const res = await api({ action: 'getOrderData', orderId });
+    document.getElementById('absen-order-loading').style.display = 'none';
+
+    if (!res.success) {
+      showMsg('absen-msg', '❌ ' + res.message, 'error');
+      return;
+    }
+
+    STATE.currentOrderData = res;
+
+    document.getElementById('absen-client-name').textContent = res.clientName;
+    document.getElementById('absen-program').textContent = res.program;
+    document.getElementById('absen-lokasi').textContent = res.lokasi;
+    document.getElementById('absen-jadwal').textContent = (res.hari || '') + ', ' + (res.jam || '');
+    document.getElementById('absen-order-card').style.display = 'block';
+
+  } catch(e) {
+    document.getElementById('absen-order-loading').style.display = 'none';
+    showMsg('absen-msg', '❌ Gagal memuat data order', 'error');
+  }
+}
+
+// ============================================================
+// GPS
+// ============================================================
+function getGPS() {
+  const gpsEl = document.getElementById('gps-status');
+  gpsEl.innerHTML = '<span>📍</span><p style="font-size:12px;color:var(--gray);">Mendeteksi lokasi GPS...</p>';
+  gpsEl.style.background = '#f1f5f9';
+
+  if (!navigator.geolocation) {
+    gpsEl.innerHTML = '<span>⚠️</span><p style="font-size:12px;color:#9a3a28;">GPS tidak tersedia di browser ini</p>';
+    gpsEl.style.background = '#FDF0EE';
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      STATE.gpsLat = pos.coords.latitude;
+      STATE.gpsLng = pos.coords.longitude;
+      gpsEl.innerHTML = '<span>✅</span><p style="font-size:12px;color:var(--green-text);">GPS terdeteksi — ' +
+        STATE.gpsLat.toFixed(4) + ', ' + STATE.gpsLng.toFixed(4) + '</p>';
+      gpsEl.style.background = 'var(--green-bg)';
+    },
+    err => {
+      gpsEl.innerHTML = '<span>⚠️</span><p style="font-size:12px;color:#9a3a28;">GPS gagal dideteksi — ' + err.message + '</p>';
+      gpsEl.style.background = '#FDF0EE';
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+  );
+}
+
+// ============================================================
+// PHOTO
+// ============================================================
+function handlePhoto(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  const preview = document.getElementById('photo-preview');
+  preview.src = url;
+  preview.style.display = 'block';
+  document.getElementById('photo-upload-area').style.display = 'none';
+}
+
+function toBase64(file) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => res(reader.result);
+    reader.onerror = e => rej(e);
+  });
+}
+
+// ============================================================
+// SUBMIT ABSENSI
+// ============================================================
+async function submitAbsensi() {
+  hideMsg('absen-msg');
+
+  if (!STATE.currentOrderData) {
+    return showMsg('absen-msg', '⚠️ Order ID tidak valid', 'error');
+  }
+
+  const photoFile = document.getElementById('photo-input').files[0];
+  if (!photoFile) {
+    return showMsg('absen-msg', '⚠️ Upload foto kehadiran dulu', 'error');
+  }
+
+  // Cek duplikasi
+  try {
+    const dupRes = await api({ action: 'checkDuplicate', orderId: STATE.currentOrderId });
+    if (dupRes.duplicate) {
+      if (!confirm('⚠️ Kamu sudah absen untuk Order ID ini hari ini.\n\nLanjutkan tetap submit?')) return;
+    }
+  } catch(e) {}
+
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Menyimpan...';
+
+  try {
+    const base64Photo = await toBase64(photoFile);
+
+    const res = await apiPost({
+      action: 'saveAttendance',
+      token: STATE.token,
+      kodePIC: STATE.kodePIC,
+      namaPIC: STATE.namaPanggil,
+      orderId: STATE.currentOrderId,
+      base64Photo,
+      latitude: STATE.gpsLat || '',
+      longitude: STATE.gpsLng || '',
+      device: navigator.userAgent
+    });
+
+    btn.disabled = false;
+    btn.innerHTML = '✅ Submit Absensi';
+
+    if (!res.success) {
+      showMsg('absen-msg', '❌ ' + res.message, 'error');
+      return;
+    }
+
+    // SUCCESS
+    document.getElementById('success-modal').classList.add('show');
+
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '✅ Submit Absensi';
+    showMsg('absen-msg', '❌ Gagal koneksi. Coba lagi.', 'error');
+  }
+}
+
+function closeSuccessModal() {
+  document.getElementById('success-modal').classList.remove('show');
+  STATE.currentOrderId = null;
+  STATE.currentOrderData = null;
+  document.getElementById('photo-preview').style.display = 'none';
+  document.getElementById('photo-upload-area').style.display = 'block';
+  document.getElementById('photo-input').value = '';
+  loadDashboard();
+  showPage('dashboard');
+}
+
+// ============================================================
+// HISTORY
+// ============================================================
+async function loadHistory() {
+  document.getElementById('hist-nama').textContent = STATE.namaPanggil || '—';
+  document.getElementById('hist-kode').textContent =
+    (STATE.kodePIC || '—') + ' — ' + (STATE.spesialis || '');
+
+  const loadingEl = document.getElementById('hist-loading');
+  const contentEl = document.getElementById('hist-content');
+
+  loadingEl.style.display = 'flex';
+  contentEl.style.display = 'none';
+
+  try {
+    const res = await api({ action: 'getHistory', token: STATE.token, kodePIC: STATE.kodePIC });
+
+    loadingEl.style.display = 'none';
+    contentEl.style.display = 'block';
+    STATE.historyData = res;
+
+    if (!res.success || res.data.length === 0) {
+      contentEl.innerHTML = '<p style="text-align:center;font-size:13px;color:var(--gray);padding:24px;">Belum ada riwayat absensi</p>';
+      return;
+    }
+
+    // Rekening info
+    let html = `
+      <div class="rekening-box" style="margin-bottom:16px;">
+        <p>Rekening Pembayaran</p>
+        <small>${res.bank || '-'} · ${res.cabang || '-'}<br>
+        No. ${res.rekening || '-'}<br>
+        a.n. ${res.atasNama || '-'}</small>
+      </div>
+    `;
+
+    // Paket list
+    res.data.forEach(p => {
+      const isDone = p.sesiHadir >= p.jumlahSesi && p.jumlahSesi > 0;
+      const pct = p.jumlahSesi > 0 ? Math.round((p.sesiHadir / p.jumlahSesi) * 100) : 0;
+
+      html += `
+        <div class="rekap-card">
+          <div class="rekap-header">
+            <div>
+              <h3>${p.clientName}</h3>
+              <small>${p.orderId} · ${p.program}</small>
+            </div>
+            <span class="badge ${isDone ? 'badge-green' : 'badge-orange'}">
+              ${p.sesiHadir}/${p.jumlahSesi > 0 ? p.jumlahSesi : '?'} sesi
+            </span>
+          </div>
+          <div class="rekap-stats">
+            <div class="rekap-stat">
+              <strong>${p.sesiHadir}</strong>
+              <span>Hadir</span>
+            </div>
+            <div class="rekap-stat">
+              <strong>${p.biayaPerSesi > 0 ? formatRupiah(p.biayaPerSesi) : '—'}</strong>
+              <span>Per sesi</span>
+            </div>
+            <div class="rekap-stat">
+              <strong style="color:${isDone ? 'var(--green-text)' : 'var(--orange)'}">
+                ${p.totalBayaran > 0 ? formatRupiah(p.totalBayaran) : '—'}
+              </strong>
+              <span>Total</span>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill ${isDone ? 'done' : ''}" style="width:${pct}%"></div>
+          </div>
+          <div>
+            ${p.sesiList.slice(0, 5).map(s => `
+              <div class="sesi-item">
+                <div class="sesi-num">${s.noSesi}</div>
+                <div class="sesi-info">
+                  <p>${s.tanggal}</p>
+                  <small>Jam ${s.jam} · ${p.lokasi}</small>
+                </div>
+                ${s.photoUrl ? `<a class="sesi-foto" href="${s.photoUrl}" target="_blank">📷 Foto</a>` : ''}
+              </div>
+            `).join('')}
+            ${p.sesiList.length > 5 ? `<p style="font-size:12px;color:var(--gray);text-align:center;padding:8px;">+${p.sesiList.length - 5} sesi lainnya</p>` : ''}
+          </div>
+        </div>
+      `;
+    });
+
+    contentEl.innerHTML = html;
+
+  } catch(e) {
+    loadingEl.style.display = 'none';
+    contentEl.style.display = 'block';
+    contentEl.innerHTML = '<p style="text-align:center;color:var(--gray);font-size:13px;padding:20px;">Gagal memuat data. Coba lagi.</p>';
+  }
+}
+
+// Override showPage untuk load data
+const _showPage = showPage;
+window.showPage = function(id) {
+  _showPage(id);
+  if (id === 'history') loadHistory();
+  if (id === 'dashboard') loadDashboard();
+};
+
+// ============================================================
+// FORMAT RUPIAH
+// ============================================================
+function formatRupiah(num) {
+  if (!num || num === 0) return 'Rp 0';
+  if (num >= 1000000) return 'Rp ' + (num/1000000).toFixed(1).replace('.0','') + 'jt';
+  if (num >= 1000) return 'Rp ' + (num/1000).toFixed(0) + 'rb';
+  return 'Rp ' + num.toLocaleString('id-ID');
+}
+
+// ============================================================
+// START
+// ============================================================
+window.addEventListener('load', init);
+</script>
+</body>
+</html>
