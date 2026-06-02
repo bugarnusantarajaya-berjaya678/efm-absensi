@@ -40,6 +40,16 @@
     .btn-sm{width:auto;padding:11px 24px;font-size:13px;border-radius:10px;}
     .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
     .stat-card{background:var(--light);border-radius:14px;padding:16px;border:1px solid var(--border);}
+    .paket-card{background:var(--light);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;}
+    .paket-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+    .paket-client{font-weight:700;font-size:14px;color:var(--navy);}
+    .paket-program{font-size:11px;color:var(--gray);margin-top:2px;}
+    .paket-badge{background:#EEEEF5;color:var(--navy);font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px;white-space:nowrap;}
+    .progress-bar{background:#E0E0EA;border-radius:99px;height:5px;margin:8px 0;overflow:hidden;}
+    .progress-fill{background:var(--navy);border-radius:99px;height:100%;transition:width .5s;}
+    .paket-meta{display:flex;gap:12px;font-size:11px;color:var(--gray);margin-top:6px;}
+    .paket-biaya{font-weight:700;font-size:14px;color:var(--orange);margin-top:6px;}
+    .paket-tgl{font-size:11px;color:var(--gray);margin-top:2px;}
     .stat-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px;}
     .stat-num{font-size:22px;font-weight:700;color:var(--navy);margin-bottom:4px;}
     .stat-label{font-size:11px;color:var(--gray);}
@@ -172,8 +182,8 @@
   <div class="hero"><h1 id="dash-greeting">Halo, Pelatih! 👋</h1><p id="dash-date"></p></div>
   <div class="card-body">
     <div class="stats-grid">
-      <div class="stat-card"><div class="stat-icon" style="background:#EEEEF5;">📅</div><div class="stat-num" id="dash-total-sesi">—</div><div class="stat-label">Sesi bulan ini</div></div>
-      <div class="stat-card"><div class="stat-icon" style="background:#FDF0EE;">💰</div><div class="stat-num" id="dash-total-bayar">—</div><div class="stat-label">Total bayaran</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#EEEEF5;">📦</div><div class="stat-num" id="dash-total-paket">—</div><div class="stat-label">Paket aktif</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#FDF0EE;">💰</div><div class="stat-num" id="dash-total-potensi">—</div><div class="stat-label">Potensi bayaran</div></div>
     </div>
     <div class="section-title">Aksi cepat</div>
     <button class="action-btn action-btn-primary" onclick="showPage('scan')">
@@ -186,8 +196,8 @@
       <div class="action-text"><strong style="color:var(--navy);">Riwayat Absensi</strong><span style="color:var(--gray);">Lihat sesi dan rekap bayaran</span></div>
       <div class="action-arr" style="color:var(--gray);">›</div>
     </button>
-    <div class="section-title">Absensi terakhir</div>
-    <div id="dash-recent"><div style="text-align:center;padding:20px;color:var(--gray);font-size:13px;">Memuat data...</div></div>
+    <div class="section-title">Paket aktif</div>
+    <div id="dash-paket-aktif"><div style="text-align:center;padding:20px;color:var(--gray);font-size:13px;">Memuat data...</div></div>
   </div>
   <div class="bottom-nav">
     <button class="nav-item active" onclick="showPage('dashboard')"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></button>
@@ -409,24 +419,49 @@ async function doLogout(){
 
 async function loadDashboard(){
   const hari=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-  const bulan=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const bulan=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
   const now=new Date();
   document.getElementById('dash-greeting').textContent='Halo, '+(STATE.namaPanggil||'Pelatih')+'! 👋';
   document.getElementById('dash-date').textContent=hari[now.getDay()]+', '+now.getDate()+' '+bulan[now.getMonth()]+' '+now.getFullYear();
   try{
-    const res=await api({action:'getHistory',token:STATE.token,kodePIC:STATE.kodePIC});
+    const res=await api({action:'getDashboard',token:STATE.token,kodePIC:STATE.kodePIC});
     if(res.success){
-      const m=now.getMonth(),y=now.getFullYear();let sesi=0,bayar=0;
-      res.data.forEach(p=>{p.sesiList.forEach(s=>{const d=new Date(s.timestamp);if(d.getMonth()===m&&d.getFullYear()===y){sesi++;bayar+=p.biayaPerSesi;}});});
-      document.getElementById('dash-total-sesi').textContent=sesi;
-      document.getElementById('dash-total-bayar').textContent=formatRp(bayar);
-      const recent=[];res.data.forEach(p=>{p.sesiList.forEach(s=>{recent.push({...s,clientName:p.clientName,lokasi:p.lokasi});});});
-      recent.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
-      const el=document.getElementById('dash-recent');
-      if(!recent.length){el.innerHTML='<p style="text-align:center;font-size:13px;color:var(--gray);padding:16px;">Belum ada absensi</p>';}
-      else{el.innerHTML=recent.slice(0,3).map(s=>`<div class="activity-item"><div class="activity-dot" style="background:var(--green);"></div><div><div class="activity-text">${s.clientName} — ${s.lokasi}</div><div class="activity-sub">${s.tanggal}, ${s.jam}</div></div><div class="activity-time">HADIR</div></div>`).join('');}
+      document.getElementById('dash-total-paket').textContent=res.totalActivePackets||0;
+      document.getElementById('dash-total-potensi').textContent=fmtRpShort(res.totalPotensi||0);
+      renderPaketAktif(res.activePackets||[]);
     }
-  }catch(e){document.getElementById('dash-total-sesi').textContent='—';document.getElementById('dash-total-bayar').textContent='—';}
+  }catch(e){
+    document.getElementById('dash-total-paket').textContent='—';
+    document.getElementById('dash-total-potensi').textContent='—';
+  }
+}
+
+function fmtRpShort(n){
+  if(!n||n===0)return'Rp 0';
+  if(n>=1000000)return'Rp '+(n/1000000).toFixed(1).replace('.0','')+'jt';
+  if(n>=1000)return'Rp '+(n/1000).toFixed(0)+'rb';
+  return'Rp '+n;
+}
+
+function renderPaketAktif(packets){
+  const el=document.getElementById('dash-paket-aktif');
+  if(!packets.length){
+    el.innerHTML='<p style="text-align:center;font-size:13px;color:var(--gray);padding:20px;">Tidak ada paket aktif saat ini</p>';
+    return;
+  }
+  el.innerHTML=packets.map(p=>{
+    const pct=p.totalSesi>0?Math.min(100,Math.round((p.sesiSelesai/p.totalSesi)*100)):0;
+    return`<div class="paket-card">
+      <div class="paket-header">
+        <div><div class="paket-client">${p.clientName}</div><div class="paket-program">${p.program}</div></div>
+        <div class="paket-badge">${p.sesiSelesai}/${p.totalSesi} sesi</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="paket-meta"><span>📍 ${p.lokasi}</span><span>📅 ${p.hari}${p.jam?', '+p.jam:''}</span></div>
+      ${p.tglSelesai?`<div class="paket-tgl">⏰ Berakhir: ${p.tglSelesai}</div>`:''}
+      <div class="paket-biaya">${fmtRpShort(p.biayaPaket)}</div>
+    </div>`;
+  }).join('');
 }
 
 async function startCamera(){
