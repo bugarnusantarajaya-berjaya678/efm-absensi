@@ -145,37 +145,45 @@
     .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;}
     @keyframes spin{to{transform:rotate(360deg);}}
     /* ─── SPLASH SCREEN — NEON MATRIX ─── */
-    #loading-screen{position:fixed;inset:0;background:#050510;display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s ease;}
+    #loading-screen{position:fixed;inset:0;background:#1E1C43;display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s ease;}
     #splash-canvas{position:absolute;inset:0;z-index:0;}
+    /* Atmosphere rings — background decoration, bukan mengelilingi logo */
+    .splash-atm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;pointer-events:none;}
+    .splash-atm-r{position:absolute;border-radius:50%;border:1px solid rgba(224,89,69,.07);transform:translate(-50%,-50%);}
+    .splash-atm-r:nth-child(1){width:320px;height:320px;border-color:rgba(224,89,69,.12);animation:atmSpin 18s linear infinite;}
+    .splash-atm-r:nth-child(2){width:500px;height:500px;animation:atmSpinRev 26s linear infinite;}
+    .splash-atm-r:nth-child(3){width:700px;height:700px;border-color:rgba(255,255,255,.04);animation:atmSpin 38s linear infinite;}
+    @keyframes atmSpin{to{transform:translate(-50%,-50%) rotate(360deg);}}
+    @keyframes atmSpinRev{to{transform:translate(-50%,-50%) rotate(-360deg);}}
+    /* Center content */
     .splash-center{position:relative;z-index:2;text-align:center;display:flex;flex-direction:column;align-items:center;}
-    /* Logo orbit rings */
-    .splash-logo-wrap{position:relative;width:110px;height:110px;margin:0 auto 28px;animation:splashPop .7s .4s cubic-bezier(.34,1.56,.64,1) both;}
-    .splash-ring1{position:absolute;inset:-10px;border-radius:50%;border:1px solid rgba(30,28,67,.9);animation:splashSpin 8s linear infinite;}
-    .splash-ring2{position:absolute;inset:-22px;border-radius:50%;border:1px dashed rgba(224,89,69,.25);animation:splashSpinRev 14s linear infinite;}
-    .splash-ring3{position:absolute;inset:-36px;border-radius:50%;border:1px solid rgba(224,89,69,.08);animation:splashSpin 20s linear infinite;}
-    .splash-logo-img{width:110px;height:110px;position:relative;z-index:1;filter:drop-shadow(0 0 18px rgba(224,89,69,.55)) drop-shadow(0 0 40px rgba(30,28,67,.8));}
-    /* Text */
-    .splash-brand{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:8px;line-height:1;
-      background:linear-gradient(160deg,#ffffff 40%,rgba(224,89,69,.85));
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-      filter:drop-shadow(0 0 24px rgba(224,89,69,.35));
-      animation:splashSlide .7s .75s ease both;}
-    .splash-mgmt{font-size:9px;font-weight:600;letter-spacing:5px;color:rgba(255,255,255,.3);margin-top:4px;animation:splashSlide .7s .85s ease both;}
-    /* Divider bar */
-    .splash-bar{display:flex;align-items:center;gap:10px;margin:18px 0 14px;animation:splashSlide .6s 1s ease both;}
-    .splash-line{height:1px;width:44px;background:linear-gradient(90deg,transparent,rgba(224,89,69,.55));}
-    .splash-line.r{background:linear-gradient(90deg,rgba(224,89,69,.55),transparent);}
-    .splash-tag{font-size:8px;letter-spacing:3.5px;color:#E05945;font-weight:700;}
-    /* Progress */
-    .splash-status{animation:splashSlide .6s 1.15s ease both;}
-    .splash-status-txt{font-size:9px;letter-spacing:2.5px;color:rgba(255,255,255,.2);font-weight:600;}
-    .splash-prog{width:140px;height:2px;background:rgba(255,255,255,.07);border-radius:99px;margin:8px auto 0;overflow:hidden;}
-    .splash-prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1E1C43,#E05945);animation:splashLoad 2s 1.3s ease both;}
-    /* Keyframes */
-    @keyframes splashPop{from{opacity:0;transform:scale(0) rotate(-25deg);}to{opacity:1;transform:scale(1) rotate(0deg);}}
+    /* Logo bulat — ring orbit sempurna */
+    .splash-logo-wrap{position:relative;width:120px;height:120px;margin:0 auto 28px;display:flex;align-items:center;justify-content:center;animation:splashPop .7s .3s cubic-bezier(.34,1.56,.64,1) both;}
+    .splash-ring1{position:absolute;inset:-12px;border-radius:50%;border:1.5px solid rgba(224,89,69,.35);animation:splashSpin 8s linear infinite;}
+    .splash-ring2{position:absolute;inset:-24px;border-radius:50%;border:1px dashed rgba(224,89,69,.18);animation:splashSpinRev 14s linear infinite;}
+    .splash-ring3{position:absolute;inset:-38px;border-radius:50%;border:1px solid rgba(255,255,255,.06);animation:splashSpin 22s linear infinite;}
+    .splash-logo-img{width:120px;height:120px;object-fit:contain;display:block;position:relative;z-index:1;filter:drop-shadow(0 0 16px rgba(224,89,69,.5)) drop-shadow(0 0 40px rgba(224,89,69,.2));}
     @keyframes splashSpin{to{transform:rotate(360deg);}}
     @keyframes splashSpinRev{to{transform:rotate(-360deg);}}
-    @keyframes splashSlide{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+    /* Text */
+    .splash-brand{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:8px;line-height:1;
+      color:#fff;
+      text-shadow:0 0 30px rgba(224,89,69,.4),0 0 60px rgba(224,89,69,.15);
+      animation:splashSlide .7s .65s ease both;}
+    .splash-mgmt{font-family:'Poppins',sans-serif;font-size:9px;font-weight:600;letter-spacing:5px;color:rgba(255,255,255,.35);margin-top:5px;animation:splashSlide .7s .75s ease both;}
+    /* Divider bar */
+    .splash-bar{display:flex;align-items:center;gap:10px;margin:18px 0 14px;animation:splashSlide .6s .9s ease both;}
+    .splash-line{height:1px;width:44px;background:linear-gradient(90deg,transparent,rgba(224,89,69,.6));}
+    .splash-line.r{background:linear-gradient(90deg,rgba(224,89,69,.6),transparent);}
+    .splash-tag{font-family:'Poppins',sans-serif;font-size:8px;letter-spacing:3.5px;color:#E05945;font-weight:700;}
+    /* Progress */
+    .splash-status{animation:splashSlide .6s 1.05s ease both;}
+    .splash-status-txt{font-family:'Poppins',sans-serif;font-size:9px;letter-spacing:2.5px;color:rgba(255,255,255,.2);font-weight:600;}
+    .splash-prog{width:140px;height:2px;background:rgba(255,255,255,.08);border-radius:99px;margin:8px auto 0;overflow:hidden;}
+    .splash-prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#2d2b6e,#E05945);animation:splashLoad 2s 1.2s ease both;}
+    /* Keyframes */
+    @keyframes splashPop{from{opacity:0;transform:scale(.85) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}
+    @keyframes splashSlide{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
     @keyframes splashLoad{from{width:0;}to{width:100%;}}
   </style>
 </head>
@@ -188,7 +196,7 @@
       <div class="splash-ring1"></div>
       <div class="splash-ring2"></div>
       <div class="splash-ring3"></div>
-      <img class="splash-logo-img" src="logo-circle-white.png" alt="EFM">
+      <img class="splash-logo-img" src="Logo-Putih-Bulet-Tanpa%20Tulisan.png" alt="EFM">
     </div>
     <div class="splash-brand">ESSENTIAL</div>
     <div class="splash-mgmt">FITNESS MANAGEMENT</div>
