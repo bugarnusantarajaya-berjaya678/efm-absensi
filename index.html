@@ -219,17 +219,27 @@
       .page{min-height:calc(100vh - 80px);}
       /* Stat cards tidak collapse saat loading (—) */
       .stat-card{min-height:110px;}
-      #page-login.active{display:flex;flex-direction:column;}
-      #page-login.active .card-body{flex:1;}
+      /* Tablet: padding lebih besar untuk semua halaman (kecuali login sudah custom) */
+      .hero{padding:40px 36px 56px;}
+      .hero h1{font-size:26px;}
+      .hero p{font-size:14px;}
+      .card-body{padding:36px 36px 80px;}
+      /* Login khusus (override hero/card-body umum) */
       #page-login .hero{padding:52px 44px 68px;}
       #page-login .hero h1{font-size:26px;line-height:1.2;white-space:nowrap;}
       #page-login .hero h1 br{display:none;}
       #page-login .hero p{font-size:15px;margin-top:6px;}
       #page-login .card-body{padding:40px 44px 48px;}
+      #page-login.active{display:flex;flex-direction:column;}
+      #page-login.active .card-body{flex:1;}
     }
 
     @media (min-width: 1024px) {
       #app{width:720px;}
+      /* Desktop: padding lebih besar lagi */
+      .hero{padding:48px 44px 64px;}
+      .hero h1{font-size:28px;}
+      .card-body{padding:40px 44px 100px;}
     }
   </style>
 </head>
