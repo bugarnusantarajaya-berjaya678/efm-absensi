@@ -409,16 +409,7 @@
     <div class="field"><label>Nama PIC</label><input type="text" id="absen-nama-pic" readonly></div>
     <div id="gps-status" class="gps-badge" style="background:#f1f5f9;"><span>📍</span><p style="font-size:12px;color:var(--gray);">Mendeteksi lokasi GPS...</p></div>
     <div id="gps-distance" class="gps-badge" style="display:none;background:#f1f5f9;margin-top:-8px;"><span>📏</span><p id="gps-distance-text" style="font-size:12px;color:var(--gray);">Menghitung jarak ke lokasi...</p></div>
-    <div class="section-title">Foto Kehadiran</div>
-    <img id="photo-preview" src="" alt="preview foto">
-    <div class="photo-upload" id="photo-upload-area">
-      <input type="file" id="photo-input" accept="image/*" capture="environment" onchange="handlePhoto(event)">
-      <div class="upload-icon">📷</div>
-      <p>Tap untuk ambil foto kehadiran</p>
-      <small>Foto wajib diupload</small>
-    </div>
-    <button class="btn btn-primary" id="btn-submit" onclick="submitAbsensi()">✅ Submit Absensi</button>
-    <!-- GPS INVALID BANNER — muncul di bawah foto kalau lokasi salah -->
+    <!-- GPS INVALID BANNER — muncul langsung setelah badge GPS -->
     <div id="gps-block-banner" class="gps-block-banner" style="background:#fff5f5;">
       <div class="block-icon">🚫</div>
       <div class="block-title">KAMU TIDAK DI LOKASI KLIEN!</div>
@@ -426,6 +417,18 @@
       <div class="block-subtitle">Jarak kamu terlalu jauh dari lokasi klien.<br>Absensi hanya bisa dilakukan<br><strong>dalam radius 300 meter.</strong></div>
       <div class="block-hint">📍 Pergi ke lokasi klien terlebih dahulu, lalu refresh halaman ini</div>
     </div>
+    <!-- AREA FOTO — tersembunyi otomatis saat lokasi salah -->
+    <div id="foto-section">
+      <div class="section-title">Foto Kehadiran</div>
+      <img id="photo-preview" src="" alt="preview foto">
+      <div class="photo-upload" id="photo-upload-area">
+        <input type="file" id="photo-input" accept="image/*" capture="environment" onchange="handlePhoto(event)">
+        <div class="upload-icon">📷</div>
+        <p>Tap untuk ambil foto kehadiran</p>
+        <small>Foto wajib diupload</small>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btn-submit" onclick="submitAbsensi()">✅ Submit Absensi</button>
     <div class="msg" id="absen-msg"></div>
   </div>
 </div>
@@ -716,6 +719,7 @@ async function goToAbsen(orderId){
   document.getElementById('photo-input').value='';
   document.getElementById('gps-distance').style.display='none';
   document.getElementById('gps-block-banner').style.display='none';
+  document.getElementById('foto-section').style.display='block';
   // Tombol disabled dulu — menunggu validasi GPS
   const btn=document.getElementById('btn-submit');
   btn.disabled=true;
@@ -781,7 +785,10 @@ function getGPS(){
       if(STATE.orderLat){
         STATE.gpsValid=false;
         const btn=document.getElementById('btn-submit');
-        btn.disabled=true;btn.className='btn btn-blocked';btn.innerHTML='🚫 GPS Diperlukan — Aktifkan Lokasi';
+        btn.disabled=true;btn.className='btn btn-blocked';btn.innerHTML='Tidak Bisa Absen, lokasimu salah!';
+        document.getElementById('foto-section').style.display='none';
+        document.getElementById('gps-block-banner').style.display='block';
+        document.getElementById('block-distance-text').textContent='GPS tidak aktif';
       } else {
         const btn=document.getElementById('btn-submit');
         btn.disabled=false;btn.className='btn btn-primary';btn.innerHTML='✅ Submit Absensi';
@@ -807,26 +814,26 @@ function showGPSDistance(){
   const el=document.getElementById('gps-distance');
   const txt=document.getElementById('gps-distance-text');
   const banner=document.getElementById('gps-block-banner');
+  const fotoSection=document.getElementById('foto-section');
   const btn=document.getElementById('btn-submit');
   el.style.display='flex';
 
   if(dist<=300){
-    // ✅ VALID — dalam radius 300m → tombol aktif
+    // ✅ VALID — dalam radius 300m → tampilkan foto, aktifkan tombol
     STATE.gpsValid=true;
     txt.textContent='Kamu berada di lokasi yang benar: '+dist+' m ✅';
     txt.style.color='var(--green-text)';
     txt.style.fontWeight='700';
     el.style.background='var(--green-bg)';
     el.style.border='1.5px solid #bbf7d0';
-    // Sembunyikan banner merah
     banner.style.display='none';
-    // Aktifkan tombol submit
+    fotoSection.style.display='block';
     btn.disabled=false;
     btn.className='btn btn-primary';
     btn.innerHTML='✅ Submit Absensi';
 
   } else {
-    // ❌ INVALID — terlalu jauh → tombol diblokir total
+    // ❌ INVALID — terlalu jauh → sembunyikan foto, tampilkan banner, blokir tombol
     STATE.gpsValid=false;
     const km=(dist/1000).toFixed(1);
     const distLabel=dist>=1000?km+' km':dist+' m';
@@ -835,13 +842,12 @@ function showGPSDistance(){
     txt.style.fontWeight='700';
     el.style.background='#fff5f5';
     el.style.border='1.5px solid #fca5a5';
-    // Tampilkan banner merah besar
     banner.style.display='block';
     document.getElementById('block-distance-text').textContent=distLabel+' dari lokasi klien';
-    // Blokir tombol submit total
+    fotoSection.style.display='none';
     btn.disabled=true;
     btn.className='btn btn-blocked';
-    btn.innerHTML='🚫 Tidak Bisa Absen — Lokasi Salah';
+    btn.innerHTML='Tidak Bisa Absen, lokasimu salah!';
   }
 }
 
