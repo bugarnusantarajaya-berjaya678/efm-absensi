@@ -142,6 +142,7 @@
     .msg-error{background:#fef2f2;color:#991b1b;}
     .msg-success{background:var(--green-bg);color:var(--green-text);}
     .msg-info{background:#EEEEF5;color:var(--navy);}
+    .msg-warning{background:#fff7ed;color:#92400e;border-left:3px solid #f97316;}
     .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;}
     @keyframes spin{to{transform:rotate(360deg);}}
     /* ─── SPLASH SCREEN — NEON MATRIX ─── */
@@ -661,7 +662,18 @@ async function submitAbsensi(){
       device:navigator.userAgent
     });
     btn.disabled=false;btn.innerHTML='✅ Submit Absensi';
-    if(!res.success){showMsg('absen-msg','❌ '+res.message,'error');return;}
+    if(!res.success){
+      if(res.limitReached){
+        // Paket sudah selesai — tampilkan pesan khusus
+        showMsg('absen-msg','📦 '+res.message,'warning');
+        btn.disabled=true;
+        btn.style.opacity='0.4';
+        btn.innerHTML='🚫 Paket Sudah Selesai';
+        return;
+      }
+      showMsg('absen-msg','❌ '+res.message,'error');
+      return;
+    }
     document.getElementById('success-modal').classList.add('show');
   }catch(e){
     btn.disabled=false;btn.innerHTML='✅ Submit Absensi';
