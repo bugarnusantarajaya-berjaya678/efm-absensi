@@ -218,9 +218,13 @@
       }
       /* Setiap page mengisi penuh #app — login konsisten dgn dashboard */
       .page{min-height:calc(100vh - 80px);}
-      /* Login: card-body stretch ke bawah — HARUS pakai .active agar tidak override display:none */
+      /* Login desktop — padding lebih besar agar terasa lebar seperti halaman lain */
       #page-login.active{display:flex;flex-direction:column;}
       #page-login.active .card-body{flex:1;}
+      #page-login .hero{padding:48px 48px 64px;}
+      #page-login .hero h1{font-size:30px;line-height:1.25;}
+      #page-login .hero p{font-size:15px;}
+      #page-login .card-body{padding:40px 48px 48px;}
     }
 
     @media (min-width: 1024px) {
