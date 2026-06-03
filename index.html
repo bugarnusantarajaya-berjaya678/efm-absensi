@@ -191,70 +191,35 @@
        RESPONSIVE — TABLET & DESKTOP
     ═══════════════════════════════════════ */
 
-    /* ── TABLET (768px – 1023px) ── */
+    /* ── TABLET (768px+) & DESKTOP (1024px+) ── */
     @media (min-width: 768px) {
-      html,body{height:100%;background:#0f0e24;display:flex;align-items:center;justify-content:center;padding:20px;}
-      #desktop-layout{display:flex;align-items:center;justify-content:center;width:100%;}
+      html,body{
+        height:100%;
+        background:linear-gradient(135deg,#0f0e24 0%,#1E1C43 50%,#150f20 100%);
+        display:flex;align-items:flex-start;justify-content:center;
+        min-height:100vh;
+        padding:32px 20px;
+      }
+      #desktop-layout{display:flex;justify-content:center;width:100%;}
       #desktop-hero{display:none;}
-      #app{max-width:520px;width:100%;border-radius:28px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.55);}
-      .page{min-height:0;border-radius:28px;overflow:hidden;}
-      .card-body{border-radius:0;min-height:420px;}
-      #loading-screen{border-radius:0;}
+      #app{
+        max-width:520px;
+        width:100%;
+        border-radius:28px;
+        overflow:hidden;
+        box-shadow:0 24px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.06);
+        min-height:calc(100vh - 64px);
+        display:flex;
+        flex-direction:column;
+      }
+      .page{min-height:0;flex:1;}
+      .card-body{min-height:400px;}
     }
 
-    /* ── DESKTOP (1024px+) ── */
+    /* ── DESKTOP (1024px+) — sedikit lebih besar ── */
     @media (min-width: 1024px) {
-      html,body{padding:0;align-items:stretch;}
-      #desktop-layout{display:flex;width:100vw;min-height:100vh;align-items:stretch;}
-
-      /* Panel kiri — branding EFM */
-      #desktop-hero{
-        display:flex;flex:1;flex-direction:column;
-        justify-content:space-between;align-items:flex-start;
-        padding:48px 60px;
-        background:linear-gradient(145deg,#1E1C43 0%,#12112e 60%,#1a0f1f 100%);
-        position:relative;overflow:hidden;
-      }
-      /* Decorative circles di hero */
-      #desktop-hero::before{
-        content:'';position:absolute;
-        width:600px;height:600px;border-radius:50%;
-        border:1px solid rgba(224,89,69,.08);
-        top:50%;left:50%;transform:translate(-50%,-50%);
-        animation:heroCircle 30s linear infinite;
-      }
-      #desktop-hero::after{
-        content:'';position:absolute;
-        width:900px;height:900px;border-radius:50%;
-        border:1px solid rgba(224,89,69,.04);
-        top:50%;left:50%;transform:translate(-50%,-50%);
-      }
-      @keyframes heroCircle{to{transform:translate(-50%,-50%) rotate(360deg);}}
-
-      /* Panel kanan — app */
-      #app{width:460px;min-width:460px;overflow-y:auto;max-height:100vh;border-radius:0;box-shadow:-16px 0 60px rgba(0,0,0,.35);}
-      .page{min-height:100vh;border-radius:0;}
-      .card-body{min-height:0;}
-
-      /* Navbar bottom di desktop lebih compact */
-      .bottom-nav{position:sticky;bottom:0;}
+      #app{max-width:560px;}
     }
-
-    /* Hero desktop content styles */
-    .dh-logo{height:52px;width:auto;object-fit:contain;position:relative;z-index:2;}
-    .dh-main{position:relative;z-index:2;}
-    .dh-title{font-family:'Bebas Neue',sans-serif;font-size:64px;line-height:1;letter-spacing:4px;
-      background:linear-gradient(160deg,#fff 40%,rgba(224,89,69,.8));
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-      margin-bottom:6px;}
-    .dh-sub{font-size:13px;font-weight:600;letter-spacing:4px;color:rgba(255,255,255,.35);margin-bottom:40px;}
-    .dh-desc{font-size:16px;color:rgba(255,255,255,.7);line-height:1.7;max-width:340px;margin-bottom:48px;}
-    .dh-badges{display:flex;flex-direction:column;gap:14px;}
-    .dh-badge{display:flex;align-items:center;gap:14px;padding:14px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;}
-    .dh-badge-icon{font-size:22px;flex-shrink:0;}
-    .dh-badge-text strong{display:block;font-size:13px;font-weight:600;color:#fff;}
-    .dh-badge-text span{font-size:11px;color:rgba(255,255,255,.4);}
-    .dh-footer{position:relative;z-index:2;font-size:11px;color:rgba(255,255,255,.2);letter-spacing:1px;}
   </style>
 </head>
 <body>
