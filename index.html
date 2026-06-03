@@ -218,6 +218,9 @@
       }
       /* Setiap page mengisi penuh #app — login konsisten dgn dashboard */
       .page{min-height:calc(100vh - 80px);}
+      /* Login: card-body stretch ke bawah agar konsisten dgn halaman lain */
+      #page-login{display:flex;flex-direction:column;}
+      #page-login .card-body{flex:1;}
     }
 
     @media (min-width: 1024px) {
@@ -500,10 +503,11 @@ async function init(){
       }
     }catch(e){}
   }
+  // Tampilkan login DULU sebelum load data — cegah layar kosong
   hideLanding();
-  await loadCoachList();
-  if(orderFromUrl)STATE.currentOrderId=orderFromUrl;
   showPage('login');
+  if(orderFromUrl)STATE.currentOrderId=orderFromUrl;
+  await loadCoachList(); // Load coach list di background setelah login muncul
 }
 
 function hideLanding(){const ls=document.getElementById('loading-screen');ls.style.opacity='0';setTimeout(()=>ls.style.display='none',400);}
