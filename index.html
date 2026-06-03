@@ -187,25 +187,22 @@
     @keyframes splashSlide{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
     @keyframes splashLoad{from{width:0;}to{width:100%;}}
 
+    /* Desktop hero — hidden di semua device (termasuk mobile!) */
+    #desktop-hero{display:none;}
+
     /* ═══════════════════════════════════════
        RESPONSIVE — TABLET & DESKTOP
     ═══════════════════════════════════════ */
-
-    /* ── TABLET (768px+) & DESKTOP (1024px+) ── */
     @media (min-width: 768px) {
       html,body{
-        height:100%;
-        /* Background navy solid + subtle centered glow */
         background-color:#1E1C43;
         background-image:
-          radial-gradient(ellipse 80% 60% at 50% 40%, rgba(224,89,69,.07) 0%, transparent 70%),
-          radial-gradient(ellipse 50% 40% at 20% 80%, rgba(30,28,67,.9) 0%, transparent 60%);
+          radial-gradient(ellipse 80% 60% at 50% 40%, rgba(224,89,69,.07) 0%, transparent 70%);
         display:flex;align-items:flex-start;justify-content:center;
         min-height:100vh;
         padding:40px 20px;
       }
       #desktop-layout{display:flex;justify-content:center;width:100%;}
-      #desktop-hero{display:none;}
       #app{
         max-width:680px;
         width:100%;
@@ -219,13 +216,11 @@
         display:flex;
         flex-direction:column;
       }
-      .page{min-height:0;flex:1;}
-      .card-body{min-height:400px;}
+      /* Setiap page mengisi penuh #app — login konsisten dgn dashboard */
+      .page{min-height:calc(100vh - 80px);}
     }
 
-    /* ── DESKTOP (1024px+) ── */
     @media (min-width: 1024px) {
-      body{padding:40px 20px;}
       #app{max-width:720px;}
     }
   </style>
