@@ -17,7 +17,7 @@
     .page.active{display:flex;}
     .topbar{background:var(--navy);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
     .topbar img{height:34px;width:auto;object-fit:contain;}
-    .topbar-back{background:rgba(255,255,255,0.15);border:none;border-radius:8px;padding:7px 12px;cursor:pointer;font-size:18px;color:white;line-height:1;}
+    .topbar-back{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:8px;padding:7px 14px;cursor:pointer;color:white;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;line-height:1;}
     .topbar-title{color:white;font-size:15px;font-weight:600;}
     .btn-logout{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:8px;padding:7px 14px;cursor:pointer;color:white;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;}
     .hero{background:var(--navy);padding:20px 20px 48px;color:white;}
@@ -361,7 +361,7 @@
 
 <!-- SCAN -->
 <div class="page" id="page-scan">
-  <div class="topbar"><button class="topbar-back" onclick="stopCamera();showPage('dashboard')">‹</button><div class="topbar-title">Scan QR Klien</div><div style="width:36px;"></div></div>
+  <div class="topbar"><button class="topbar-back" onclick="stopCamera();showPage('dashboard')"><span style="font-size:18px;line-height:1;">‹</span> Kembali</button><div class="topbar-title">Scan QR Klien</div><div style="width:36px;"></div></div>
   <div style="background:var(--navy);padding:12px 20px 28px;text-align:center;"><p style="color:rgba(255,255,255,.7);font-size:13px;font-weight:500;">Arahkan kamera ke QR barcode klien</p></div>
   <div class="card-body">
     <div id="camera-container"><video id="camera-video" autoplay playsinline muted></video><canvas id="camera-canvas"></canvas><div class="scan-overlay"><div class="scan-line"></div></div></div>
@@ -393,7 +393,7 @@
 
 <!-- FORM ABSENSI -->
 <div class="page" id="page-absen">
-  <div class="topbar"><button class="topbar-back" onclick="showPage('scan')">‹</button><div class="topbar-title">Form Absensi</div><div style="width:36px;"></div></div>
+  <div class="topbar"><button class="topbar-back" onclick="showPage('scan')"><span style="font-size:18px;line-height:1;">‹</span> Kembali</button><div class="topbar-title">Form Absensi</div><div style="width:36px;"></div></div>
   <div style="background:var(--navy);padding:12px 20px 44px;"><p style="color:rgba(255,255,255,.65);font-size:13px;" id="absen-order-label">Order ID: —</p></div>
   <div class="card-body">
     <div id="absen-order-loading" class="info-box info-navy"><div class="info-box-icon">⏳</div><p>Memvalidasi Order ID...</p></div>
