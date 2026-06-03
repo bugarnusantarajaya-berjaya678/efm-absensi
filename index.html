@@ -398,6 +398,7 @@
     <div class="field"><label>Kode PIC</label><input type="text" id="absen-kode-pic" readonly></div>
     <div class="field"><label>Nama PIC</label><input type="text" id="absen-nama-pic" readonly></div>
     <div id="gps-status" class="gps-badge" style="background:#f1f5f9;"><span>📍</span><p style="font-size:12px;color:var(--gray);">Mendeteksi lokasi GPS...</p></div>
+    <div id="gps-distance" class="gps-badge" style="display:none;background:#f1f5f9;margin-top:-8px;"><span>📏</span><p id="gps-distance-text" style="font-size:12px;color:var(--gray);">Menghitung jarak ke lokasi...</p></div>
     <div class="section-title">Foto Kehadiran</div>
     <img id="photo-preview" src="" alt="preview foto">
     <div class="photo-upload" id="photo-upload-area">
@@ -443,7 +444,7 @@
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycbw9x7h3ybotWARoncs4nh12Q9dAZCUEMA5tfRkErVelDs58xbGIH9ZgOhN-DooJ9QALZg/exec';
 const COOKIE_KEY='EFM_SESSION';
-let STATE={token:null,kodePIC:null,namaPanggil:null,namaLengkap:null,spesialis:null,bank:null,cabang:null,rekening:null,atasNama:null,currentOrderId:null,currentOrderData:null,gpsLat:null,gpsLng:null};
+let STATE={token:null,kodePIC:null,namaPanggil:null,namaLengkap:null,spesialis:null,bank:null,cabang:null,rekening:null,atasNama:null,currentOrderId:null,currentOrderData:null,gpsLat:null,gpsLng:null,orderLat:null,orderLng:null};
 let cameraStream=null,scanInterval=null;
 
 function setCookie(n,v,d){const e=new Date();e.setTime(e.getTime()+(d*864e5));document.cookie=n+'='+encodeURIComponent(v)+';expires='+e.toUTCString()+';path=/;SameSite=Strict';}
@@ -700,23 +701,72 @@ async function goToAbsen(orderId){
     document.getElementById('absen-order-loading').style.display='none';
     if(!res.success){showMsg('absen-msg','❌ '+res.message,'error');return;}
     STATE.currentOrderData=res;
+    STATE.orderLat=res.latitude?parseFloat(res.latitude):null;
+    STATE.orderLng=res.longitude?parseFloat(res.longitude):null;
     document.getElementById('absen-client-name').textContent=res.clientName;
     document.getElementById('absen-program').textContent=res.program;
     document.getElementById('absen-lokasi').textContent=res.lokasi;
     document.getElementById('absen-jadwal').textContent=(res.hari||'')+', '+(res.jam||'');
     document.getElementById('absen-order-card').style.display='block';
+    // Kalau GPS sudah didapat, hitung jarak sekarang
+    if(STATE.gpsLat&&STATE.orderLat) showGPSDistance();
   }catch(e){document.getElementById('absen-order-loading').style.display='none';showMsg('absen-msg','❌ Gagal memuat data order','error');}
 }
 
 function getGPS(){
   const el=document.getElementById('gps-status');
   el.innerHTML='<span>📍</span><p style="font-size:12px;color:var(--gray);">Mendeteksi lokasi GPS...</p>';el.style.background='#f1f5f9';
-  if(!navigator.geolocation){el.innerHTML='<span>⚠️</span><p style="font-size:12px;color:#9a3a28;">GPS tidak tersedia</p>';el.style.background='#FDF0EE';return;}
+  document.getElementById('gps-distance').style.display='none';
+  if(!navigator.geolocation){el.innerHTML='<span>⚠️</span><p style="font-size:12px;color:#9a3a28;">GPS tidak tersedia di browser ini</p>';el.style.background='#FDF0EE';return;}
   navigator.geolocation.getCurrentPosition(
-    pos=>{STATE.gpsLat=pos.coords.latitude;STATE.gpsLng=pos.coords.longitude;el.innerHTML='<span>✅</span><p style="font-size:12px;color:var(--green-text);">GPS terdeteksi — '+STATE.gpsLat.toFixed(4)+', '+STATE.gpsLng.toFixed(4)+'</p>';el.style.background='var(--green-bg)';},
-    err=>{el.innerHTML='<span>⚠️</span><p style="font-size:12px;color:#9a3a28;">GPS gagal: '+err.message+'</p>';el.style.background='#FDF0EE';},
-    {enableHighAccuracy:true,timeout:10000,maximumAge:0}
+    pos=>{
+      STATE.gpsLat=pos.coords.latitude;
+      STATE.gpsLng=pos.coords.longitude;
+      el.innerHTML='<span>✅</span><p style="font-size:12px;color:var(--green-text);">GPS terdeteksi — '+STATE.gpsLat.toFixed(5)+', '+STATE.gpsLng.toFixed(5)+'</p>';
+      el.style.background='var(--green-bg)';
+      // Hitung jarak ke lokasi order (kalau data order sudah ada)
+      if(STATE.orderLat) showGPSDistance();
+    },
+    err=>{
+      el.innerHTML='<span>⚠️</span><p style="font-size:12px;color:#9a3a28;">GPS gagal: '+err.message+'</p>';
+      el.style.background='#FDF0EE';
+    },
+    {enableHighAccuracy:true,timeout:15000,maximumAge:0}
   );
+}
+
+// Hitung jarak antara 2 koordinat (Haversine formula) → return meter
+function calcDistance(lat1,lng1,lat2,lng2){
+  const R=6371000; // Radius bumi dalam meter
+  const dLat=(lat2-lat1)*Math.PI/180;
+  const dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// Tampilkan badge jarak GPS device vs lokasi order
+function showGPSDistance(){
+  if(!STATE.gpsLat||!STATE.gpsLng||!STATE.orderLat||!STATE.orderLng) return;
+  const dist=Math.round(calcDistance(STATE.gpsLat,STATE.gpsLng,STATE.orderLat,STATE.orderLng));
+  const el=document.getElementById('gps-distance');
+  const txt=document.getElementById('gps-distance-text');
+  el.style.display='flex';
+  if(dist<=300){
+    // Valid — dalam radius 300m
+    txt.textContent='Jarak ke lokasi klien: '+dist+' m ✓ (dalam radius)';
+    txt.style.color='var(--green-text)';
+    el.style.background='var(--green-bg)';
+  } else if(dist<=1000){
+    // Warning — agak jauh (300-1000m)
+    txt.textContent='Jarak ke lokasi klien: '+dist+' m ⚠️ ('+Math.round(dist/1000*10)/10+' km dari lokasi)';
+    txt.style.color='#9a6600';
+    el.style.background='#fffbeb';
+  } else {
+    // Jauh — lebih dari 1km
+    txt.textContent='Jarak ke lokasi klien: '+Math.round(dist/100)/10+' km — pastikan kamu di lokasi yang benar';
+    txt.style.color='#9a3a28';
+    el.style.background='#FDF0EE';
+  }
 }
 
 function handlePhoto(e){
