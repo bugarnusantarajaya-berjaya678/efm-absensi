@@ -33,20 +33,17 @@
     .pin-wrapper input{padding-right:48px !important;}
     .pin-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:#94a3b8;display:flex;align-items:center;transition:color .2s;}
     .pin-toggle:hover{color:var(--navy);}
-    .countdown-box{background:#FFF3CD;border:1px solid #FFEAA7;border-radius:12px;padding:14px 16px;text-align:center;margin-top:12px;display:none;}
-    .countdown-box .countdown-timer{font-size:28px;font-weight:700;color:#1E1C43;font-variant-numeric:tabular-nums;letter-spacing:2px;}
-    .countdown-box .countdown-label{font-size:12px;color:#856404;margin-top:4px;}
-    .reset-section{margin-top:16px;display:none;}
-    .reset-section .reset-hint{font-size:12px;color:var(--gray);text-align:center;margin-bottom:10px;}
-    .btn-reset-request{width:100%;padding:13px;border-radius:12px;border:2px solid var(--navy);background:white;color:var(--navy);font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;}
-    .btn-reset-request:hover{background:var(--navy);color:white;}
-    .reset-waiting{background:#E8F4FD;border:1px solid #BEE3F8;border-radius:12px;padding:16px;text-align:center;margin-top:12px;display:none;}
-    .reset-waiting p{font-size:13px;color:#2B6CB0;font-weight:600;margin:0 0 4px;}
-    .reset-waiting small{font-size:11px;color:#4A90D9;}
-    .reset-approved{background:#C6F6D5;border:1px solid #9AE6B4;border-radius:12px;padding:16px;text-align:center;margin-top:12px;display:none;}
-    .reset-approved p{font-size:13px;color:#276749;font-weight:700;margin:0 0 4px;}
-    .reset-rejected{background:#FED7D7;border:1px solid #FC8181;border-radius:12px;padding:16px;text-align:center;margin-top:12px;display:none;}
-    .reset-rejected p{font-size:13px;color:#C53030;font-weight:600;margin:0;}
+    #page-lock{background:#1E1C43;}
+    .lock-icon-circle{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
+    .lock-timer-box{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:20px 16px;margin-bottom:28px;text-align:center;}
+    .lock-timer{color:#E05945;font-size:52px;font-weight:700;letter-spacing:6px;font-variant-numeric:tabular-nums;line-height:1;}
+    .lock-btn{width:100%;padding:14px;border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;}
+    .lock-btn-outline{background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.3);color:white;}
+    .lock-btn-wa{background:#25D366;border:none;color:white;}
+    .lock-btn-primary{background:#E05945;border:none;color:white;font-size:15px;}
+    .lock-status-box{border-radius:14px;padding:16px;margin-bottom:20px;}
+    .lock-pulse{width:8px;height:8px;border-radius:50%;background:#FBBF24;display:inline-block;animation:lockpulse 1.5s infinite;}
+    @keyframes lockpulse{0%,100%{opacity:1}50%{opacity:0.3}}
     .pin-hint{background:#EEEEF5;border-radius:10px;padding:12px 14px;margin-bottom:16px;border-left:3px solid var(--navy);}
     .pin-hint p{font-size:12px;color:var(--navy);line-height:1.7;}
     .pin-hint strong{color:var(--orange);}
@@ -354,36 +351,6 @@
     <button class="btn btn-primary" id="btn-login" onclick="doLogin()"><span style="font-size:20px;">🔐</span> Masuk</button>
     <div class="msg" id="login-msg"></div>
 
-    <!-- Countdown timer saat akun terkunci -->
-    <div class="countdown-box" id="login-countdown-box">
-      <div class="countdown-timer" id="login-countdown-timer">05:00</div>
-      <div class="countdown-label">Coba lagi setelah timer selesai</div>
-    </div>
-
-    <!-- Tombol Ajukan Unlock (muncul di round 2) -->
-    <div class="reset-section" id="reset-section">
-      <p class="reset-hint">Masih tidak bisa login? Ajukan unlock ke admin EFM</p>
-      <button class="btn-reset-request" id="btn-request-reset" onclick="doRequestReset()">
-        🔓 Ajukan Unlock Akun ke Admin
-      </button>
-    </div>
-
-    <!-- Status menunggu konfirmasi admin -->
-    <div class="reset-waiting" id="reset-waiting">
-      <p>⏳ Menunggu konfirmasi admin EFM...</p>
-      <small>Admin akan menerima email dan meng-approve unlock akun kamu</small>
-    </div>
-
-    <!-- Unlock berhasil diapprove -->
-    <div class="reset-approved" id="reset-approved">
-      <p>✅ Akun berhasil di-unlock!</p>
-      <small>Silakan login kembali dengan PIN kamu.<br>Jika lupa PIN, hubungi admin EFM.</small>
-    </div>
-
-    <!-- Request ditolak admin -->
-    <div class="reset-rejected" id="reset-rejected">
-      <p>❌ Request unlock ditolak admin.<br>Hubungi admin EFM via WhatsApp.</p>
-    </div>
     <div style="text-align:center;margin-top:20px;">
       <span style="font-size:13px;color:var(--gray);">Belum punya akun?</span>
       <button onclick="showPage('signup')" style="background:none;border:none;color:var(--navy);font-weight:700;font-size:13px;cursor:pointer;text-decoration:underline;padding:0 4px;">Daftar di sini</button>
@@ -438,6 +405,116 @@
       <span style="font-size:13px;color:var(--gray);">Sudah punya akun?</span>
       <button onclick="showPage('login')" style="background:none;border:none;color:var(--navy);font-weight:700;font-size:13px;cursor:pointer;text-decoration:underline;padding:0 4px;">Masuk di sini</button>
     </div>
+  </div>
+</div>
+
+
+<!-- LOCK PAGE -->
+<div class="page" id="page-lock">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px 24px;min-height:100vh;box-sizing:border-box;">
+    <p style="color:rgba(255,255,255,0.3);font-size:10px;letter-spacing:2px;margin:0 0 36px;text-transform:uppercase;">Essential Fitness Management</p>
+
+    <!-- STATE: TERKUNCI + TIMER -->
+    <div id="lock-state-locked" style="width:100%;text-align:center;">
+      <div class="lock-icon-circle" style="background:rgba(224,89,69,0.15);border:2px solid rgba(224,89,69,0.35);">
+        <i class="ti ti-lock" style="font-size:30px;color:#E05945;" aria-hidden="true"></i>
+      </div>
+      <p style="color:rgba(255,255,255,0.5);font-size:11px;letter-spacing:1px;margin:0 0 6px;text-transform:uppercase;">Akun terkunci sementara</p>
+      <p style="color:white;font-size:16px;font-weight:600;margin:0 0 28px;line-height:1.5;">Terlalu banyak percobaan<br>salah PIN</p>
+      <div class="lock-timer-box" id="lock-timer-box">
+        <p style="color:rgba(255,255,255,0.45);font-size:11px;margin:0 0 8px;letter-spacing:0.5px;">Coba lagi dalam</p>
+        <div class="lock-timer" id="lock-timer-display">05:00</div>
+        <p style="color:rgba(255,255,255,0.3);font-size:11px;margin:10px 0 0;">menit : detik</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <button class="lock-btn lock-btn-outline" id="lock-btn-request" onclick="doRequestReset()" style="display:none;">
+          <i class="ti ti-lock-open" style="font-size:18px;" aria-hidden="true"></i>
+          Ajukan Unlock ke Admin
+        </button>
+        <button class="lock-btn lock-btn-wa" onclick="window.open('https://wa.me/6281119920666?text=Halo%20Admin%20EFM%2C%20saya%20lupa%20PIN%20login%20absensi.','_blank')">
+          <i class="ti ti-brand-whatsapp" style="font-size:18px;" aria-hidden="true"></i>
+          Lupa PIN? Chat WA Admin EFM
+        </button>
+      </div>
+      <p style="color:rgba(255,255,255,0.2);font-size:11px;margin:24px 0 0;">Akun terbuka otomatis setelah timer habis</p>
+    </div>
+
+    <!-- STATE: MENUNGGU KONFIRMASI ADMIN -->
+    <div id="lock-state-waiting" style="display:none;width:100%;text-align:center;">
+      <div class="lock-icon-circle" style="background:rgba(251,191,36,0.12);border:2px solid rgba(251,191,36,0.35);">
+        <i class="ti ti-clock" style="font-size:30px;color:#FBBF24;" aria-hidden="true"></i>
+      </div>
+      <p style="color:rgba(255,255,255,0.45);font-size:11px;letter-spacing:1px;margin:0 0 6px;text-transform:uppercase;">Menunggu konfirmasi</p>
+      <p style="color:white;font-size:16px;font-weight:600;margin:0 0 24px;line-height:1.5;">Request sudah dikirim<br>ke admin EFM</p>
+      <div class="lock-status-box" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;">
+          <div class="lock-pulse"></div>
+          <span style="color:#FBBF24;font-size:12px;font-weight:600;">Email terkirim ke admin</span>
+        </div>
+        <p style="color:rgba(255,255,255,0.4);font-size:11px;margin:0;line-height:1.5;">Admin akan menerima notifikasi<br>dan meng-approve unlock akun kamu</p>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span style="color:rgba(255,255,255,0.35);font-size:11px;">Status</span>
+          <span style="background:rgba(251,191,36,0.15);color:#FBBF24;font-size:10px;padding:2px 8px;border-radius:6px;">Menunggu</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:rgba(255,255,255,0.35);font-size:11px;">Kode PIC</span>
+          <span style="color:rgba(255,255,255,0.6);font-size:11px;font-weight:600;" id="lock-waiting-kode">—</span>
+        </div>
+      </div>
+      <button class="lock-btn lock-btn-wa" onclick="window.open('https://wa.me/6281119920666?text=Halo%20Admin%20EFM%2C%20saya%20lupa%20PIN%20login%20absensi.','_blank')">
+        <i class="ti ti-brand-whatsapp" style="font-size:18px;" aria-hidden="true"></i>
+        Lupa PIN? Chat WA Admin EFM
+      </button>
+      <p style="color:rgba(255,255,255,0.18);font-size:10px;margin:16px 0 0;line-height:1.5;">Halaman ini otomatis update<br>saat admin sudah approve</p>
+    </div>
+
+    <!-- STATE: BERHASIL DI-UNLOCK -->
+    <div id="lock-state-approved" style="display:none;width:100%;text-align:center;">
+      <div class="lock-icon-circle" style="background:rgba(34,197,94,0.12);border:2px solid rgba(34,197,94,0.4);">
+        <i class="ti ti-lock-open" style="font-size:30px;color:#22C55E;" aria-hidden="true"></i>
+      </div>
+      <p style="color:rgba(255,255,255,0.45);font-size:11px;letter-spacing:1px;margin:0 0 6px;text-transform:uppercase;">Akun berhasil di-unlock</p>
+      <p style="color:white;font-size:16px;font-weight:600;margin:0 0 24px;line-height:1.5;">Admin sudah konfirmasi.<br>Kamu bisa login kembali!</p>
+      <div class="lock-status-box" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);margin-bottom:24px;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;">
+          <i class="ti ti-circle-check" style="font-size:16px;color:#22C55E;" aria-hidden="true"></i>
+          <span style="color:#22C55E;font-size:12px;font-weight:600;">Unlock berhasil</span>
+        </div>
+        <p style="color:rgba(255,255,255,0.4);font-size:11px;margin:0;line-height:1.5;">Masukkan PIN kamu yang sudah ada.<br>Jika lupa PIN hubungi admin EFM.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <button class="lock-btn lock-btn-primary" onclick="showPage('login')">
+          <i class="ti ti-login" style="font-size:18px;" aria-hidden="true"></i>
+          Login Sekarang
+        </button>
+        <button class="lock-btn lock-btn-wa" onclick="window.open('https://wa.me/6281119920666?text=Halo%20Admin%20EFM%2C%20saya%20lupa%20PIN%20login%20absensi.','_blank')">
+          <i class="ti ti-brand-whatsapp" style="font-size:18px;" aria-hidden="true"></i>
+          Lupa PIN? Chat WA Admin EFM
+        </button>
+      </div>
+    </div>
+
+    <!-- STATE: DITOLAK ADMIN -->
+    <div id="lock-state-rejected" style="display:none;width:100%;text-align:center;">
+      <div class="lock-icon-circle" style="background:rgba(224,89,69,0.12);border:2px solid rgba(224,89,69,0.3);">
+        <i class="ti ti-x" style="font-size:30px;color:#E05945;" aria-hidden="true"></i>
+      </div>
+      <p style="color:rgba(255,255,255,0.45);font-size:11px;letter-spacing:1px;margin:0 0 6px;text-transform:uppercase;">Request ditolak</p>
+      <p style="color:white;font-size:16px;font-weight:600;margin:0 0 24px;line-height:1.5;">Admin menolak request unlock.<br>Hubungi admin via WhatsApp.</p>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <button class="lock-btn lock-btn-wa" onclick="window.open('https://wa.me/6281119920666?text=Halo%20Admin%20EFM%2C%20request%20unlock%20saya%20ditolak.','_blank')">
+          <i class="ti ti-brand-whatsapp" style="font-size:18px;" aria-hidden="true"></i>
+          Chat WA Admin EFM
+        </button>
+        <button class="lock-btn lock-btn-outline" onclick="showPage('login')">
+          <i class="ti ti-arrow-left" style="font-size:18px;" aria-hidden="true"></i>
+          Kembali ke Login
+        </button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -686,22 +763,24 @@ async function doLogin(){
     const res=await api({action:'login',kodePIC,pin});
     btn.disabled=false;btn.innerHTML='🔐 Masuk';
     if(!res.success){
-      // Clear PIN field & refocus
       document.getElementById('login-pin').value='';
       document.getElementById('login-pin').focus();
-      showMsg('login-msg','❌ '+res.message,'error');
-      // Tampilkan countdown jika locked
+      // Jika terkunci → pergi ke lock page
       if(res.locked && res.lockedUntil){
-        startCountdown(res.lockedUntil);
-        btn.disabled=true;
+        showLockPage(res.lockedUntil, res.showResetButton||false);
+        return;
       }
-      // Tampilkan tombol ajukan unlock jika round 2
-      if(res.showResetButton) showResetSection();
+      // Jika round 2 (showResetButton, belum terkunci) → lock page tanpa timer
+      if(res.showResetButton){
+        showLockPage(null, true);
+        return;
+      }
+      showMsg('login-msg','❌ '+res.message,'error');
       return;
     }
     // Login berhasil
-    stopCountdown();
-    hideResetSection();
+    stopLockCountdown();
+    stopResetPolling();
     Object.assign(STATE,{token:res.token,kodePIC:res.kodePIC,namaPanggil:res.nama,nomorID:res.nomorID});
     setCookie(COOKIE_KEY,JSON.stringify({token:res.token}),1);
     if(STATE.currentOrderId){goToAbsen(STATE.currentOrderId);}
@@ -738,24 +817,47 @@ async function doSignUp(){
   }catch(e){showMsg('signup-msg','❌ Gagal koneksi. Periksa internet dan coba lagi.','error');btn.disabled=false;btn.innerHTML='✅ Daftar Sekarang';}
 }
 
-// ── COUNTDOWN TIMER ──────────────────────────
-function startCountdown(lockedUntilISO){
-  stopCountdown();
-  const box=document.getElementById('login-countdown-box');
-  const timerEl=document.getElementById('login-countdown-timer');
-  const btn=document.getElementById('btn-login');
-  box.style.display='block';
-  btn.disabled=true;
+// ── LOCK PAGE FUNCTIONS ──────────────────────────────────────────
+function showLockPage(lockedUntilISO, showResetBtn){
+  showLockState('locked');
+  // Tampilkan / sembunyikan tombol ajukan unlock
+  const reqBtn=document.getElementById('lock-btn-request');
+  reqBtn.style.display=showResetBtn?'flex':'none';
+  // Tampilkan / sembunyikan timer box
+  const timerBox=document.getElementById('lock-timer-box');
+  if(lockedUntilISO){
+    timerBox.style.display='block';
+    startLockCountdown(lockedUntilISO,showResetBtn);
+  } else {
+    timerBox.style.display='none';
+  }
+  showPage('lock');
+}
 
+function showLockState(state){
+  ['locked','waiting','approved','rejected'].forEach(s=>{
+    const el=document.getElementById('lock-state-'+s);
+    if(el)el.style.display=s===state?'block':'none';
+  });
+}
+
+function startLockCountdown(lockedUntilISO, showResetBtnOnDone){
+  stopLockCountdown();
+  const timerEl=document.getElementById('lock-timer-display');
+  const reqBtn=document.getElementById('lock-btn-request');
   function tick(){
     const remaining=Math.ceil((new Date(lockedUntilISO)-new Date())/1000);
     if(remaining<=0){
-      stopCountdown();
-      box.style.display='none';
-      btn.disabled=false;
+      stopLockCountdown();
+      // Timer habis → otomatis balik ke login
+      showPage('login');
       hideMsg('login-msg');
       showMsg('login-msg','✅ Silakan coba login kembali','success');
       document.getElementById('login-pin').focus();
+      if(showResetBtnOnDone){
+        // Round 2: lock page terbuka lagi tapi tanpa timer, reset btn langsung tampil
+        // (ini bisa terjadi kalau timer habis dan round >= 2, tapi tetap di login page)
+      }
       return;
     }
     const m=Math.floor(remaining/60).toString().padStart(2,'0');
@@ -766,45 +868,33 @@ function startCountdown(lockedUntilISO){
   STATE.countdownInterval=setInterval(tick,1000);
 }
 
-function stopCountdown(){
+function stopLockCountdown(){
   if(STATE.countdownInterval){clearInterval(STATE.countdownInterval);STATE.countdownInterval=null;}
-  const box=document.getElementById('login-countdown-box');
-  if(box)box.style.display='none';
-}
-
-// ── RESET SECTION ────────────────────────────
-function showResetSection(){
-  document.getElementById('reset-section').style.display='block';
-}
-
-function hideResetSection(){
-  document.getElementById('reset-section').style.display='none';
-  document.getElementById('reset-waiting').style.display='none';
-  document.getElementById('reset-approved').style.display='none';
-  document.getElementById('reset-rejected').style.display='none';
-  stopResetPolling();
 }
 
 async function doRequestReset(){
   const kodePIC=document.getElementById('login-kode-pic').value.trim().toUpperCase();
-  if(!kodePIC)return showMsg('login-msg','⚠️ Masukkan Kode PIC kamu dulu di atas','error');
-  const btn=document.getElementById('btn-request-reset');
-  btn.disabled=true;btn.textContent='⏳ Mengirim request...';
+  if(!kodePIC){showPage('login');showMsg('login-msg','⚠️ Masukkan Kode PIC kamu dulu','error');return;}
+  const btn=document.getElementById('lock-btn-request');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Mengirim...';
   try{
     const res=await api({action:'requestPINReset',kodePIC});
+    btn.disabled=false;btn.innerHTML='<i class="ti ti-lock-open" style="font-size:18px;"></i> Ajukan Unlock ke Admin';
     if(!res.success){
-      btn.disabled=false;btn.textContent='🔓 Ajukan Unlock Akun ke Admin';
+      showPage('login');
       showMsg('login-msg','❌ '+res.message,'error');
       return;
     }
     STATE.resetRequestId=res.requestId;
-    // Sembunyikan tombol, tampilkan status menunggu
-    btn.style.display='none';
-    document.getElementById('reset-waiting').style.display='block';
-    // Mulai polling
+    // Update kode di waiting state
+    const kodeEl=document.getElementById('lock-waiting-kode');
+    if(kodeEl)kodeEl.textContent=kodePIC;
+    stopLockCountdown();
+    showLockState('waiting');
     startResetPolling(res.requestId);
   }catch(e){
-    btn.disabled=false;btn.textContent='🔓 Ajukan Unlock Akun ke Admin';
+    btn.disabled=false;btn.innerHTML='<i class="ti ti-lock-open" style="font-size:18px;"></i> Ajukan Unlock ke Admin';
+    showPage('login');
     showMsg('login-msg','❌ Gagal kirim request. Coba lagi.','error');
   }
 }
@@ -816,24 +906,14 @@ function startResetPolling(requestId){
       const res=await api({action:'checkResetStatus',requestId});
       if(res.status==='approved'){
         stopResetPolling();
-        document.getElementById('reset-waiting').style.display='none';
-        document.getElementById('reset-approved').style.display='block';
-        // Re-enable login button
-        const btn=document.getElementById('btn-login');
-        btn.disabled=false;
-        stopCountdown();
+        stopLockCountdown();
+        showLockState('approved');
       } else if(res.status==='rejected'){
         stopResetPolling();
-        document.getElementById('reset-waiting').style.display='none';
-        document.getElementById('reset-rejected').style.display='block';
-        // Reset tombol ajukan
-        const reqBtn=document.getElementById('btn-request-reset');
-        reqBtn.style.display='block';
-        reqBtn.disabled=false;
-        reqBtn.textContent='🔓 Ajukan Unlock Akun ke Admin';
+        showLockState('rejected');
       }
     }catch(e){}
-  },10000); // Poll setiap 10 detik
+  },10000);
 }
 
 function stopResetPolling(){
