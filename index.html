@@ -1268,23 +1268,83 @@ async function loadHistory(){
   try{
     const res=await api({action:'getHistory',token:STATE.token,kodePIC:STATE.kodePIC});
     loadEl.style.display='none';contEl.style.display='block';
-    if(!res.success||!res.history||!res.history.length){contEl.innerHTML='<p style="text-align:center;font-size:13px;color:var(--gray);padding:24px;">Belum ada riwayat absensi</p>';return;}
-    let html=`<div class="rekening-box"><p>Total Bayaran</p><small style="font-size:16px;font-weight:700;color:var(--orange)">${formatRp(res.totalBayaran||0)}</small><br><small>${res.totalSesi||0} sesi selesai</small></div>`;
-    res.history.forEach(h=>{
+
+    if(!res.success||!res.data||!res.data.length){
+      contEl.innerHTML='<p style="text-align:center;font-size:13px;color:var(--gray);padding:32px 20px;">Belum ada paket terdaftar untuk akun ini.</p>';
+      return;
+    }
+
+    // Rekap summary box
+    let html=`<div class="rekening-box">
+      <p>Rekap Bayaran</p>
+      <small>
+        Total sesi selesai: <strong>${res.grandTotalSesi||0} sesi</strong><br>
+        Total bayaran: <strong style="color:var(--orange);">${formatRp(res.grandTotalBayaran||0)}</strong>
+      </small>
+    </div>`;
+
+    res.data.forEach(p=>{
+      const pct    = p.totalSesi>0 ? Math.min(100, Math.round(p.sesiSelesai/p.totalSesi*100)) : 0;
+      const isDone = p.statusPaket==='DONE';
+      const fillClass = isDone ? 'progress-fill done' : 'progress-fill';
+
+      // Sesi list — tampilkan max 5, sisanya "+N lagi"
+      let sesiHtml='';
+      if(p.sesiList && p.sesiList.length>0){
+        const shown = p.sesiList.slice(0,5);
+        sesiHtml = shown.map(s=>`
+          <div class="sesi-item">
+            <div class="sesi-num">${s.noSesi}</div>
+            <div class="sesi-info">
+              <p>${s.timestamp}</p>
+              <small>${p.hari||''}${p.jam?', '+p.jam:''} · ${p.lokasi||'-'}</small>
+            </div>
+            ${s.photoUrl?`<a class="sesi-foto" href="${s.photoUrl}" target="_blank">📷 Foto</a>`:''}
+          </div>`).join('');
+        if(p.sesiList.length>5){
+          sesiHtml+=`<p style="font-size:11px;color:var(--gray);text-align:center;padding:6px 0;">+${p.sesiList.length-5} sesi lainnya</p>`;
+        }
+      } else {
+        sesiHtml=`<p style="font-size:11px;color:var(--gray);text-align:center;padding:6px 0;">Belum ada sesi tercatat</p>`;
+      }
+
       html+=`<div class="rekap-card">
-        <div class="rekap-header"><div><h3>${h.clientName}</h3><small>${h.orderId} · ${h.program}</small></div>
-        <span class="badge badge-orange">${h.status}</span></div>
-        <div class="rekap-stats">
-          <div class="rekap-stat"><strong>${h.timestamp}</strong><span>Waktu</span></div>
-          <div class="rekap-stat"><strong>${h.biayaSesi>0?formatRp(h.biayaSesi):'—'}</strong><span>Bayaran</span></div>
+        <div class="rekap-header">
+          <div>
+            <h3>${p.clientName}</h3>
+            <small>${p.orderId} · ${p.program}</small>
+          </div>
+          <span class="badge badge-orange">${p.sesiSelesai} sesi</span>
         </div>
-        <div class="paket-meta"><span>📍 ${h.lokasi}</span><span>📅 ${h.hari}${h.jam?', '+h.jam:''}</span></div>
-        ${h.photoUrl?`<div style="margin-top:8px;"><a href="${h.photoUrl}" target="_blank" style="font-size:12px;color:var(--navy);font-weight:600;">📷 Lihat Foto</a></div>`:''}
+        <div class="rekap-stats">
+          <div class="rekap-stat">
+            <strong>${p.sesiSelesai}</strong>
+            <span>Hadir</span>
+          </div>
+          <div class="rekap-stat">
+            <strong style="font-size:13px;">${p.biayaSesi>0?formatRp(p.biayaSesi):'—'}</strong>
+            <span>Per sesi</span>
+          </div>
+          <div class="rekap-stat">
+            <strong style="font-size:13px;${p.totalBayaran>0?'color:var(--orange);':''}">${p.totalBayaran>0?formatRp(p.totalBayaran):'—'}</strong>
+            <span>Total</span>
+          </div>
+        </div>
+        <div class="progress-bar"><div class="${fillClass}" style="width:${pct}%"></div></div>
+        <div class="paket-meta">
+          <span>📍 ${p.lokasi||'-'}</span>
+          <span>📅 ${p.hari||'-'}${p.jam?', '+p.jam:''}</span>
+        </div>
+        <div style="margin-top:10px;">${sesiHtml}</div>
       </div>`;
     });
-    contEl.innerHTML=html;
 
-  }catch(e){loadEl.style.display='none';contEl.style.display='block';contEl.innerHTML='<p style="text-align:center;color:var(--gray);font-size:13px;padding:20px;">Gagal memuat data.</p>';}
+    contEl.innerHTML=html;
+  }catch(e){
+    loadEl.style.display='none';
+    contEl.style.display='block';
+    contEl.innerHTML='<p style="text-align:center;color:var(--gray);font-size:13px;padding:20px;">Gagal memuat data. Periksa koneksi internet.</p>';
+  }
 }
 
 function formatRp(n){if(!n||n===0)return'Rp 0';if(n>=1000000)return'Rp '+(n/1000000).toFixed(1).replace('.0','')+'jt';if(n>=1000)return'Rp '+(n/1000).toFixed(0)+'rb';return'Rp '+n.toLocaleString('id-ID');}
