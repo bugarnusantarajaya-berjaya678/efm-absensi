@@ -728,7 +728,11 @@ async function init(){
       const session=JSON.parse(saved);
       const res=await api({action:'validateToken',token:session.token});
       if(res.valid){
-        Object.assign(STATE,{token:session.token,...res});
+        Object.assign(STATE,{
+          token:    session.token,
+          kodePIC:  res.kodePIC,
+          namaPanggil: res.nama   // ← fix: map nama → namaPanggil
+        });
         hideLanding();
         if(orderFromUrl){goToAbsen(orderFromUrl);}
         else{loadDashboard();showPage('dashboard');}
@@ -1070,6 +1074,9 @@ async function goToAbsen(orderId){
     STATE.currentOrderData=res;
     STATE.orderLat=res.latitude?parseFloat(res.latitude):null;
     STATE.orderLng=res.longitude?parseFloat(res.longitude):null;
+    // Backup: kalau STATE.namaPanggil kosong, ambil dari data orderan (kolom Y)
+    if(!STATE.namaPanggil && res.namaPIC) STATE.namaPanggil=res.namaPIC;
+    document.getElementById('absen-nama-pic').value=STATE.namaPanggil||res.namaPIC||'';
     document.getElementById('absen-client-name').textContent=res.clientName;
     document.getElementById('absen-program').textContent=res.program;
     document.getElementById('absen-lokasi').textContent=res.lokasi;
