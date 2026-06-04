@@ -29,6 +29,10 @@
     .field select,.field input{width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--light);font-family:'Poppins',sans-serif;font-size:14px;color:#1e293b;outline:none;transition:border-color .2s;}
     .field select:focus,.field input:focus{border-color:var(--navy);}
     .field input[readonly]{background:#f1f5f9;color:var(--gray);}
+    .pin-wrapper{position:relative;}
+    .pin-wrapper input{padding-right:48px !important;}
+    .pin-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:#94a3b8;display:flex;align-items:center;transition:color .2s;}
+    .pin-toggle:hover{color:var(--navy);}
     .pin-hint{background:#EEEEF5;border-radius:10px;padding:12px 14px;margin-bottom:16px;border-left:3px solid var(--navy);}
     .pin-hint p{font-size:12px;color:var(--navy);line-height:1.7;}
     .pin-hint strong{color:var(--orange);}
@@ -326,7 +330,12 @@
     </div>
     <div class="field">
       <label>PIN (6 digit)</label>
-      <input type="password" id="login-pin" placeholder="••••••" maxlength="6" inputmode="numeric" autocomplete="off">
+      <div class="pin-wrapper">
+        <input type="password" id="login-pin" placeholder="••••••" maxlength="6" inputmode="numeric" autocomplete="off">
+        <button type="button" class="pin-toggle" id="toggle-login-pin" onclick="togglePIN('login-pin','toggle-login-pin')" title="Tampilkan/sembunyikan PIN">
+          <svg id="eye-login-pin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
     </div>
     <button class="btn btn-primary" id="btn-login" onclick="doLogin()"><span style="font-size:20px;">🔐</span> Masuk</button>
     <div class="msg" id="login-msg"></div>
@@ -358,12 +367,22 @@
     </div>
     <div class="field">
       <label>Buat PIN (6 digit angka)</label>
-      <input type="password" id="signup-pin" placeholder="••••••" maxlength="6" inputmode="numeric" autocomplete="new-password">
+      <div class="pin-wrapper">
+        <input type="password" id="signup-pin" placeholder="••••••" maxlength="6" inputmode="numeric" autocomplete="new-password">
+        <button type="button" class="pin-toggle" id="toggle-signup-pin" onclick="togglePIN('signup-pin','toggle-signup-pin')" title="Tampilkan/sembunyikan PIN">
+          <svg id="eye-signup-pin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
       <small style="color:var(--gray);font-size:11px;margin-top:4px;display:block;">Hanya angka, 6 digit. Contoh: 123456</small>
     </div>
     <div class="field">
       <label>Konfirmasi PIN</label>
-      <input type="password" id="signup-confirm-pin" placeholder="••••••" maxlength="6" inputmode="numeric" autocomplete="new-password">
+      <div class="pin-wrapper">
+        <input type="password" id="signup-confirm-pin" placeholder="••••••" maxlength="6" inputmode="numeric" autocomplete="new-password">
+        <button type="button" class="pin-toggle" id="toggle-signup-confirm" onclick="togglePIN('signup-confirm-pin','toggle-signup-confirm')" title="Tampilkan/sembunyikan PIN">
+          <svg id="eye-signup-confirm" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
     </div>
     <div class="pin-hint" style="margin-bottom:16px;">
       <p>🔒 PIN ini <strong>hanya kamu yang tahu</strong>. Admin tidak bisa melihat PIN kamu setelah didaftarkan.<br>Jika lupa PIN, hubungi admin untuk reset akun.</p>
@@ -571,6 +590,21 @@ function showPage(id){
 function showMsg(id,text,type){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className='msg show msg-'+type;}
 function hideMsg(id){const el=document.getElementById(id);if(el)el.className='msg';}
 
+// SVG icons untuk eye toggle
+const EYE_OPEN='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_CLOSED='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+function togglePIN(inputId, btnId){
+  const input=document.getElementById(inputId);
+  const btn=document.getElementById(btnId);
+  if(!input||!btn)return;
+  const isHidden=input.type==='password';
+  input.type=isHidden?'text':'password';
+  btn.innerHTML=isHidden?EYE_CLOSED:EYE_OPEN;
+  btn.style.color=isHidden?'var(--navy)':'#94a3b8';
+  input.focus();
+}
+
 async function init(){
   const urlParams=new URLSearchParams(window.location.search);
   const orderFromUrl=urlParams.get('order')||urlParams.get('id');
@@ -608,6 +642,8 @@ async function doLogin(){
     btn.disabled=false;btn.innerHTML='🔐 Masuk';
     if(!res.success){
       showMsg('login-msg','❌ '+res.message,'error');
+      document.getElementById('login-pin').value='';
+      document.getElementById('login-pin').focus();
       if(res.locked)document.getElementById('btn-login').disabled=true;
       return;
     }
