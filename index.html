@@ -33,6 +33,20 @@
     .pin-wrapper input{padding-right:48px !important;}
     .pin-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:#94a3b8;display:flex;align-items:center;transition:color .2s;}
     .pin-toggle:hover{color:var(--navy);}
+    .countdown-box{background:#FFF3CD;border:1px solid #FFEAA7;border-radius:12px;padding:14px 16px;text-align:center;margin-top:12px;display:none;}
+    .countdown-box .countdown-timer{font-size:28px;font-weight:700;color:#1E1C43;font-variant-numeric:tabular-nums;letter-spacing:2px;}
+    .countdown-box .countdown-label{font-size:12px;color:#856404;margin-top:4px;}
+    .reset-section{margin-top:16px;display:none;}
+    .reset-section .reset-hint{font-size:12px;color:var(--gray);text-align:center;margin-bottom:10px;}
+    .btn-reset-request{width:100%;padding:13px;border-radius:12px;border:2px solid var(--navy);background:white;color:var(--navy);font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;}
+    .btn-reset-request:hover{background:var(--navy);color:white;}
+    .reset-waiting{background:#E8F4FD;border:1px solid #BEE3F8;border-radius:12px;padding:16px;text-align:center;margin-top:12px;display:none;}
+    .reset-waiting p{font-size:13px;color:#2B6CB0;font-weight:600;margin:0 0 4px;}
+    .reset-waiting small{font-size:11px;color:#4A90D9;}
+    .reset-approved{background:#C6F6D5;border:1px solid #9AE6B4;border-radius:12px;padding:16px;text-align:center;margin-top:12px;display:none;}
+    .reset-approved p{font-size:13px;color:#276749;font-weight:700;margin:0 0 4px;}
+    .reset-rejected{background:#FED7D7;border:1px solid #FC8181;border-radius:12px;padding:16px;text-align:center;margin-top:12px;display:none;}
+    .reset-rejected p{font-size:13px;color:#C53030;font-weight:600;margin:0;}
     .pin-hint{background:#EEEEF5;border-radius:10px;padding:12px 14px;margin-bottom:16px;border-left:3px solid var(--navy);}
     .pin-hint p{font-size:12px;color:var(--navy);line-height:1.7;}
     .pin-hint strong{color:var(--orange);}
@@ -339,6 +353,37 @@
     </div>
     <button class="btn btn-primary" id="btn-login" onclick="doLogin()"><span style="font-size:20px;">🔐</span> Masuk</button>
     <div class="msg" id="login-msg"></div>
+
+    <!-- Countdown timer saat akun terkunci -->
+    <div class="countdown-box" id="login-countdown-box">
+      <div class="countdown-timer" id="login-countdown-timer">05:00</div>
+      <div class="countdown-label">Coba lagi setelah timer selesai</div>
+    </div>
+
+    <!-- Tombol Ajukan Unlock (muncul di round 2) -->
+    <div class="reset-section" id="reset-section">
+      <p class="reset-hint">Masih tidak bisa login? Ajukan unlock ke admin EFM</p>
+      <button class="btn-reset-request" id="btn-request-reset" onclick="doRequestReset()">
+        🔓 Ajukan Unlock Akun ke Admin
+      </button>
+    </div>
+
+    <!-- Status menunggu konfirmasi admin -->
+    <div class="reset-waiting" id="reset-waiting">
+      <p>⏳ Menunggu konfirmasi admin EFM...</p>
+      <small>Admin akan menerima email dan meng-approve unlock akun kamu</small>
+    </div>
+
+    <!-- Unlock berhasil diapprove -->
+    <div class="reset-approved" id="reset-approved">
+      <p>✅ Akun berhasil di-unlock!</p>
+      <small>Silakan login kembali dengan PIN kamu.<br>Jika lupa PIN, hubungi admin EFM.</small>
+    </div>
+
+    <!-- Request ditolak admin -->
+    <div class="reset-rejected" id="reset-rejected">
+      <p>❌ Request unlock ditolak admin.<br>Hubungi admin EFM via WhatsApp.</p>
+    </div>
     <div style="text-align:center;margin-top:20px;">
       <span style="font-size:13px;color:var(--gray);">Belum punya akun?</span>
       <button onclick="showPage('signup')" style="background:none;border:none;color:var(--navy);font-weight:700;font-size:13px;cursor:pointer;text-decoration:underline;padding:0 4px;">Daftar di sini</button>
@@ -532,7 +577,7 @@
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycbw9x7h3ybotWARoncs4nh12Q9dAZCUEMA5tfRkErVelDs58xbGIH9ZgOhN-DooJ9QALZg/exec';
 const COOKIE_KEY='EFM_SESSION';
-let STATE={token:null,kodePIC:null,namaPanggil:null,nomorID:null,currentOrderId:null,currentOrderData:null,gpsLat:null,gpsLng:null,orderLat:null,orderLng:null,gpsValid:null};
+let STATE={token:null,kodePIC:null,namaPanggil:null,nomorID:null,currentOrderId:null,currentOrderData:null,gpsLat:null,gpsLng:null,orderLat:null,orderLng:null,gpsValid:null,resetRequestId:null,resetPolling:null,countdownInterval:null};
 let cameraStream=null,scanInterval=null;
 
 function setCookie(n,v,d){const e=new Date();e.setTime(e.getTime()+(d*864e5));document.cookie=n+'='+encodeURIComponent(v)+';expires='+e.toUTCString()+';path=/;SameSite=Strict';}
@@ -641,17 +686,30 @@ async function doLogin(){
     const res=await api({action:'login',kodePIC,pin});
     btn.disabled=false;btn.innerHTML='🔐 Masuk';
     if(!res.success){
-      showMsg('login-msg','❌ '+res.message,'error');
+      // Clear PIN field & refocus
       document.getElementById('login-pin').value='';
       document.getElementById('login-pin').focus();
-      if(res.locked)document.getElementById('btn-login').disabled=true;
+      showMsg('login-msg','❌ '+res.message,'error');
+      // Tampilkan countdown jika locked
+      if(res.locked && res.lockedUntil){
+        startCountdown(res.lockedUntil);
+        btn.disabled=true;
+      }
+      // Tampilkan tombol ajukan unlock jika round 2
+      if(res.showResetButton) showResetSection();
       return;
     }
+    // Login berhasil
+    stopCountdown();
+    hideResetSection();
     Object.assign(STATE,{token:res.token,kodePIC:res.kodePIC,namaPanggil:res.nama,nomorID:res.nomorID});
     setCookie(COOKIE_KEY,JSON.stringify({token:res.token}),1);
     if(STATE.currentOrderId){goToAbsen(STATE.currentOrderId);}
     else{loadDashboard();showPage('dashboard');}
-  }catch(e){showMsg('login-msg','❌ Gagal koneksi. Periksa internet dan coba lagi.','error');btn.disabled=false;btn.innerHTML='🔐 Masuk';}
+  }catch(e){
+    showMsg('login-msg','❌ Gagal koneksi. Periksa internet dan coba lagi.','error');
+    btn.disabled=false;btn.innerHTML='🔐 Masuk';
+  }
 }
 
 async function doSignUp(){
@@ -678,6 +736,108 @@ async function doSignUp(){
       else{loadDashboard();showPage('dashboard');}
     },1500);
   }catch(e){showMsg('signup-msg','❌ Gagal koneksi. Periksa internet dan coba lagi.','error');btn.disabled=false;btn.innerHTML='✅ Daftar Sekarang';}
+}
+
+// ── COUNTDOWN TIMER ──────────────────────────
+function startCountdown(lockedUntilISO){
+  stopCountdown();
+  const box=document.getElementById('login-countdown-box');
+  const timerEl=document.getElementById('login-countdown-timer');
+  const btn=document.getElementById('btn-login');
+  box.style.display='block';
+  btn.disabled=true;
+
+  function tick(){
+    const remaining=Math.ceil((new Date(lockedUntilISO)-new Date())/1000);
+    if(remaining<=0){
+      stopCountdown();
+      box.style.display='none';
+      btn.disabled=false;
+      hideMsg('login-msg');
+      showMsg('login-msg','✅ Silakan coba login kembali','success');
+      document.getElementById('login-pin').focus();
+      return;
+    }
+    const m=Math.floor(remaining/60).toString().padStart(2,'0');
+    const s=(remaining%60).toString().padStart(2,'0');
+    timerEl.textContent=m+':'+s;
+  }
+  tick();
+  STATE.countdownInterval=setInterval(tick,1000);
+}
+
+function stopCountdown(){
+  if(STATE.countdownInterval){clearInterval(STATE.countdownInterval);STATE.countdownInterval=null;}
+  const box=document.getElementById('login-countdown-box');
+  if(box)box.style.display='none';
+}
+
+// ── RESET SECTION ────────────────────────────
+function showResetSection(){
+  document.getElementById('reset-section').style.display='block';
+}
+
+function hideResetSection(){
+  document.getElementById('reset-section').style.display='none';
+  document.getElementById('reset-waiting').style.display='none';
+  document.getElementById('reset-approved').style.display='none';
+  document.getElementById('reset-rejected').style.display='none';
+  stopResetPolling();
+}
+
+async function doRequestReset(){
+  const kodePIC=document.getElementById('login-kode-pic').value.trim().toUpperCase();
+  if(!kodePIC)return showMsg('login-msg','⚠️ Masukkan Kode PIC kamu dulu di atas','error');
+  const btn=document.getElementById('btn-request-reset');
+  btn.disabled=true;btn.textContent='⏳ Mengirim request...';
+  try{
+    const res=await api({action:'requestPINReset',kodePIC});
+    if(!res.success){
+      btn.disabled=false;btn.textContent='🔓 Ajukan Unlock Akun ke Admin';
+      showMsg('login-msg','❌ '+res.message,'error');
+      return;
+    }
+    STATE.resetRequestId=res.requestId;
+    // Sembunyikan tombol, tampilkan status menunggu
+    btn.style.display='none';
+    document.getElementById('reset-waiting').style.display='block';
+    // Mulai polling
+    startResetPolling(res.requestId);
+  }catch(e){
+    btn.disabled=false;btn.textContent='🔓 Ajukan Unlock Akun ke Admin';
+    showMsg('login-msg','❌ Gagal kirim request. Coba lagi.','error');
+  }
+}
+
+function startResetPolling(requestId){
+  stopResetPolling();
+  STATE.resetPolling=setInterval(async()=>{
+    try{
+      const res=await api({action:'checkResetStatus',requestId});
+      if(res.status==='approved'){
+        stopResetPolling();
+        document.getElementById('reset-waiting').style.display='none';
+        document.getElementById('reset-approved').style.display='block';
+        // Re-enable login button
+        const btn=document.getElementById('btn-login');
+        btn.disabled=false;
+        stopCountdown();
+      } else if(res.status==='rejected'){
+        stopResetPolling();
+        document.getElementById('reset-waiting').style.display='none';
+        document.getElementById('reset-rejected').style.display='block';
+        // Reset tombol ajukan
+        const reqBtn=document.getElementById('btn-request-reset');
+        reqBtn.style.display='block';
+        reqBtn.disabled=false;
+        reqBtn.textContent='🔓 Ajukan Unlock Akun ke Admin';
+      }
+    }catch(e){}
+  },10000); // Poll setiap 10 detik
+}
+
+function stopResetPolling(){
+  if(STATE.resetPolling){clearInterval(STATE.resetPolling);STATE.resetPolling=null;}
 }
 
 async function doLogout(){
