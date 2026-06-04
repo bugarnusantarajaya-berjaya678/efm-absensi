@@ -412,11 +412,11 @@
 <!-- LOCK PAGE -->
 <div class="page" id="page-lock">
   <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px 24px;min-height:100vh;box-sizing:border-box;">
-    <p style="color:rgba(255,255,255,0.3);font-size:10px;letter-spacing:2px;margin:0 0 36px;text-transform:uppercase;">Essential Fitness Management</p>
+    <p style="color:rgba(255,255,255,0.3);font-size:10px;letter-spacing:2px;margin:0 0 36px;text-transform:uppercase;display:none;"></p>
 
     <!-- STATE: TERKUNCI + TIMER -->
     <div id="lock-state-locked" style="width:100%;text-align:center;">
-      <img src="logo-circle-white.png" alt="EFM" style="width:80px;height:80px;object-fit:contain;margin:0 auto 20px;display:block;">
+      <img src="logo-circle-white.png" alt="EFM" style="width:112px;height:112px;object-fit:contain;margin:0 auto 24px;display:block;">
       <p style="color:rgba(255,255,255,0.5);font-size:11px;letter-spacing:1px;margin:0 0 6px;text-transform:uppercase;">Akun terkunci sementara</p>
       <p style="color:white;font-size:16px;font-weight:600;margin:0 0 28px;line-height:1.5;">Terlalu banyak percobaan<br>salah PIN</p>
       <div class="lock-timer-box" id="lock-timer-box">
@@ -439,7 +439,7 @@
 
     <!-- STATE: MENUNGGU KONFIRMASI ADMIN -->
     <div id="lock-state-waiting" style="display:none;width:100%;text-align:center;">
-      <img src="logo-circle-white.png" alt="EFM" style="width:80px;height:80px;object-fit:contain;margin:0 auto 20px;display:block;">
+      <img src="logo-circle-white.png" alt="EFM" style="width:112px;height:112px;object-fit:contain;margin:0 auto 24px;display:block;">
       <p style="color:rgba(255,255,255,0.45);font-size:11px;letter-spacing:1px;margin:0 0 6px;text-transform:uppercase;">Menunggu konfirmasi</p>
       <p style="color:white;font-size:16px;font-weight:600;margin:0 0 24px;line-height:1.5;">Request sudah dikirim<br>ke admin EFM</p>
       <div class="lock-status-box" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);margin-bottom:20px;">
@@ -468,7 +468,7 @@
 
     <!-- STATE: BERHASIL DI-UNLOCK -->
     <div id="lock-state-approved" style="display:none;width:100%;text-align:center;">
-      <img src="logo-circle-white.png" alt="EFM" style="width:80px;height:80px;object-fit:contain;margin:0 auto 20px;display:block;">
+      <img src="logo-circle-white.png" alt="EFM" style="width:112px;height:112px;object-fit:contain;margin:0 auto 24px;display:block;">
       <p style="color:rgba(255,255,255,0.45);font-size:11px;letter-spacing:1px;margin:0 0 6px;text-transform:uppercase;">Akun berhasil di-unlock</p>
       <p style="color:white;font-size:16px;font-weight:600;margin:0 0 24px;line-height:1.5;">Admin sudah konfirmasi.<br>Kamu bisa login kembali!</p>
       <div class="lock-status-box" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);margin-bottom:24px;">
@@ -492,7 +492,7 @@
 
     <!-- STATE: DITOLAK ADMIN -->
     <div id="lock-state-rejected" style="display:none;width:100%;text-align:center;">
-      <img src="logo-circle-white.png" alt="EFM" style="width:80px;height:80px;object-fit:contain;margin:0 auto 20px;display:block;">
+      <img src="logo-circle-white.png" alt="EFM" style="width:112px;height:112px;object-fit:contain;margin:0 auto 24px;display:block;">
       <p style="color:rgba(255,255,255,0.45);font-size:11px;letter-spacing:1px;margin:0 0 6px;text-transform:uppercase;">Request ditolak</p>
       <p style="color:white;font-size:16px;font-weight:600;margin:0 0 24px;line-height:1.5;">Admin menolak request unlock.<br>Hubungi admin via WhatsApp.</p>
       <div style="display:flex;flex-direction:column;gap:12px;">
