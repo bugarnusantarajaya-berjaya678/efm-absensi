@@ -317,15 +317,63 @@
     <p style="margin-top:6px;">Masuk untuk mulai absensi sesi latihan/terapi</p>
   </div>
   <div class="card-body" style="padding-bottom:40px;">
-    <div class="field"><label>Pilih nama kamu</label><select id="login-select"><option value="">— Pilih nama pelatih/terapis —</option></select></div>
-    <div class="field"><label>Masukkan PIN</label><input type="password" id="login-pin" placeholder="Contoh: ANM010189" autocomplete="off"></div>
-    <div class="pin-hint"><p>💡 PIN kamu = <strong>Kode PIC + Tanggal Lahir</strong><br>Format: <strong>KodePIC + DDMMYY</strong><br>Contoh: ANM + 010189 = <strong>ANM010189</strong></p></div>
+    <div class="field">
+      <label>Kode PIC</label>
+      <input type="text" id="login-kode-pic" placeholder="Contoh: BGS" autocomplete="off" maxlength="10"
+        oninput="this.value=this.value.toUpperCase()"
+        style="text-transform:uppercase;font-weight:700;letter-spacing:2px;font-size:18px;">
+      <small style="color:var(--gray);font-size:11px;margin-top:4px;display:block;">Tulis kapital semua · Contoh: BGS, ROB, ANM</small>
+    </div>
+    <div class="field">
+      <label>PIN (6 digit)</label>
+      <input type="password" id="login-pin" placeholder="••••••" maxlength="6" inputmode="numeric" autocomplete="off">
+    </div>
     <button class="btn btn-primary" id="btn-login" onclick="doLogin()"><span style="font-size:20px;">🔐</span> Masuk</button>
     <div class="msg" id="login-msg"></div>
-    <a href="https://wa.me/6281119920666?text=Halo%20Admin%20EFM%2C%20saya%20lupa%20PIN%20login%20absensi." target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;font-weight:600;font-size:13px;padding:10px 16px;border-radius:12px;text-decoration:none;margin-top:20px;box-shadow:0 2px 6px rgba(37,211,102,0.3);">
+    <div style="text-align:center;margin-top:20px;">
+      <span style="font-size:13px;color:var(--gray);">Belum punya akun?</span>
+      <button onclick="showPage('signup')" style="background:none;border:none;color:var(--navy);font-weight:700;font-size:13px;cursor:pointer;text-decoration:underline;padding:0 4px;">Daftar di sini</button>
+    </div>
+    <a href="https://wa.me/6281119920666?text=Halo%20Admin%20EFM%2C%20saya%20lupa%20PIN%20login%20absensi." target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;font-weight:600;font-size:13px;padding:10px 16px;border-radius:12px;text-decoration:none;margin-top:12px;box-shadow:0 2px 6px rgba(37,211,102,0.3);">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-      <span>Lupa PIN? Chat WhatsApp admin, klik disini!</span>
+      <span>Lupa PIN? Chat WhatsApp admin EFM</span>
     </a>
+  </div>
+</div>
+
+<!-- SIGN UP -->
+<div class="page" id="page-signup">
+  <div class="hero" style="padding-top:44px;">
+    <div style="margin-bottom:24px;"><img src="logo-circle-white.png" alt="EFM" style="height:56px;width:auto;object-fit:contain;"></div>
+    <h1>Daftar Akun EFM 🏋️</h1>
+    <p style="margin-top:6px;">Masukkan Kode PIC dan buat PIN pribadimu</p>
+  </div>
+  <div class="card-body" style="padding-bottom:40px;">
+    <div class="field">
+      <label>Kode PIC</label>
+      <input type="text" id="signup-kode-pic" placeholder="Contoh: BGS" autocomplete="off" maxlength="10"
+        oninput="this.value=this.value.toUpperCase()"
+        style="text-transform:uppercase;font-weight:700;letter-spacing:2px;font-size:18px;">
+      <small style="color:var(--gray);font-size:11px;margin-top:4px;display:block;">💡 Kode PIC didapat dari admin EFM via WhatsApp</small>
+    </div>
+    <div class="field">
+      <label>Buat PIN (6 digit angka)</label>
+      <input type="password" id="signup-pin" placeholder="••••••" maxlength="6" inputmode="numeric" autocomplete="new-password">
+      <small style="color:var(--gray);font-size:11px;margin-top:4px;display:block;">Hanya angka, 6 digit. Contoh: 123456</small>
+    </div>
+    <div class="field">
+      <label>Konfirmasi PIN</label>
+      <input type="password" id="signup-confirm-pin" placeholder="••••••" maxlength="6" inputmode="numeric" autocomplete="new-password">
+    </div>
+    <div class="pin-hint" style="margin-bottom:16px;">
+      <p>🔒 PIN ini <strong>hanya kamu yang tahu</strong>. Admin tidak bisa melihat PIN kamu setelah didaftarkan.<br>Jika lupa PIN, hubungi admin untuk reset akun.</p>
+    </div>
+    <button class="btn btn-primary" id="btn-signup" onclick="doSignUp()"><span style="font-size:20px;">✅</span> Daftar Sekarang</button>
+    <div class="msg" id="signup-msg"></div>
+    <div style="text-align:center;margin-top:20px;">
+      <span style="font-size:13px;color:var(--gray);">Sudah punya akun?</span>
+      <button onclick="showPage('login')" style="background:none;border:none;color:var(--navy);font-weight:700;font-size:13px;cursor:pointer;text-decoration:underline;padding:0 4px;">Masuk di sini</button>
+    </div>
   </div>
 </div>
 
@@ -465,7 +513,7 @@
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycbw9x7h3ybotWARoncs4nh12Q9dAZCUEMA5tfRkErVelDs58xbGIH9ZgOhN-DooJ9QALZg/exec';
 const COOKIE_KEY='EFM_SESSION';
-let STATE={token:null,kodePIC:null,namaPanggil:null,namaLengkap:null,spesialis:null,bank:null,cabang:null,rekening:null,atasNama:null,currentOrderId:null,currentOrderData:null,gpsLat:null,gpsLng:null,orderLat:null,orderLng:null,gpsValid:null};
+let STATE={token:null,kodePIC:null,namaPanggil:null,nomorID:null,currentOrderId:null,currentOrderData:null,gpsLat:null,gpsLng:null,orderLat:null,orderLng:null,gpsValid:null};
 let cameraStream=null,scanInterval=null;
 
 function setCookie(n,v,d){const e=new Date();e.setTime(e.getTime()+(d*864e5));document.cookie=n+'='+encodeURIComponent(v)+';expires='+e.toUTCString()+';path=/;SameSite=Strict';}
@@ -540,41 +588,60 @@ async function init(){
       }
     }catch(e){}
   }
-  // Tampilkan login DULU sebelum load data — cegah layar kosong
   hideLanding();
   showPage('login');
   if(orderFromUrl)STATE.currentOrderId=orderFromUrl;
-  await loadCoachList(); // Load coach list di background setelah login muncul
 }
 
 function hideLanding(){const ls=document.getElementById('loading-screen');ls.style.opacity='0';setTimeout(()=>ls.style.display='none',400);}
 
-async function loadCoachList(){
-  try{
-    const res=await api({action:'getCoachList'});
-    if(!res.success)return;
-    const sel=document.getElementById('login-select');
-    res.data.forEach(c=>{const opt=document.createElement('option');opt.value=c.kodePIC;opt.textContent=c.nama+' ('+c.kodePIC+')';sel.appendChild(opt);});
-  }catch(e){}
-}
-
 async function doLogin(){
-  const kodePIC=document.getElementById('login-select').value;
+  const kodePIC=document.getElementById('login-kode-pic').value.trim().toUpperCase();
   const pin=document.getElementById('login-pin').value.trim();
   hideMsg('login-msg');
-  if(!kodePIC)return showMsg('login-msg','⚠️ Pilih nama pelatih/terapis dulu','error');
+  if(!kodePIC)return showMsg('login-msg','⚠️ Masukkan Kode PIC kamu dulu','error');
   if(!pin)return showMsg('login-msg','⚠️ Masukkan PIN dulu','error');
   const btn=document.getElementById('btn-login');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Memverifikasi...';
   try{
     const res=await api({action:'login',kodePIC,pin});
-    if(!res.success){showMsg('login-msg','❌ '+res.message,'error');btn.disabled=false;btn.innerHTML='🔐 Masuk';return;}
-    Object.assign(STATE,{token:res.token,kodePIC:res.kodePIC,namaPanggil:res.namaPanggil,namaLengkap:res.namaLengkap,spesialis:res.spesialis,bank:res.bank,cabang:res.cabang,rekening:res.rekening,atasNama:res.atasNama});
-    setCookie(COOKIE_KEY,JSON.stringify({token:res.token}),1);
     btn.disabled=false;btn.innerHTML='🔐 Masuk';
+    if(!res.success){
+      showMsg('login-msg','❌ '+res.message,'error');
+      if(res.locked)document.getElementById('btn-login').disabled=true;
+      return;
+    }
+    Object.assign(STATE,{token:res.token,kodePIC:res.kodePIC,namaPanggil:res.nama,nomorID:res.nomorID});
+    setCookie(COOKIE_KEY,JSON.stringify({token:res.token}),1);
     if(STATE.currentOrderId){goToAbsen(STATE.currentOrderId);}
     else{loadDashboard();showPage('dashboard');}
-  }catch(e){showMsg('login-msg','❌ Gagal koneksi. Coba lagi.','error');btn.disabled=false;btn.innerHTML='🔐 Masuk';}
+  }catch(e){showMsg('login-msg','❌ Gagal koneksi. Periksa internet dan coba lagi.','error');btn.disabled=false;btn.innerHTML='🔐 Masuk';}
+}
+
+async function doSignUp(){
+  const kodePIC=document.getElementById('signup-kode-pic').value.trim().toUpperCase();
+  const pin=document.getElementById('signup-pin').value.trim();
+  const confirmPin=document.getElementById('signup-confirm-pin').value.trim();
+  hideMsg('signup-msg');
+  if(!kodePIC)return showMsg('signup-msg','⚠️ Masukkan Kode PIC kamu dulu','error');
+  if(!pin)return showMsg('signup-msg','⚠️ Buat PIN dulu','error');
+  if(pin.length!==6||!/^\d{6}$/.test(pin))return showMsg('signup-msg','⚠️ PIN harus 6 digit angka','error');
+  if(!confirmPin)return showMsg('signup-msg','⚠️ Konfirmasi PIN dulu','error');
+  if(pin!==confirmPin)return showMsg('signup-msg','❌ PIN dan konfirmasi PIN tidak sama','error');
+  const btn=document.getElementById('btn-signup');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Mendaftarkan...';
+  try{
+    const res=await api({action:'signUp',kodePIC,pin,confirmPin});
+    btn.disabled=false;btn.innerHTML='✅ Daftar Sekarang';
+    if(!res.success){showMsg('signup-msg','❌ '+res.message,'error');return;}
+    Object.assign(STATE,{token:res.token,kodePIC:res.kodePIC,namaPanggil:res.nama,nomorID:res.nomorID});
+    setCookie(COOKIE_KEY,JSON.stringify({token:res.token}),1);
+    showMsg('signup-msg','✅ '+res.message,'success');
+    setTimeout(()=>{
+      if(STATE.currentOrderId){goToAbsen(STATE.currentOrderId);}
+      else{loadDashboard();showPage('dashboard');}
+    },1500);
+  }catch(e){showMsg('signup-msg','❌ Gagal koneksi. Periksa internet dan coba lagi.','error');btn.disabled=false;btn.innerHTML='✅ Daftar Sekarang';}
 }
 
 async function doLogout(){
@@ -582,7 +649,7 @@ async function doLogout(){
   stopCamera();
   try{await api({action:'logout',token:STATE.token});}catch(e){}
   deleteCookie(COOKIE_KEY);
-  STATE={token:null,kodePIC:null,namaPanggil:null,namaLengkap:null};
+  STATE={token:null,kodePIC:null,namaPanggil:null,nomorID:null,currentOrderId:null,currentOrderData:null,gpsLat:null,gpsLng:null,orderLat:null,orderLng:null,gpsValid:null};
   showPage('login');
 }
 
@@ -919,31 +986,29 @@ function closeSuccessModal(){
 
 async function loadHistory(){
   document.getElementById('hist-nama').textContent=STATE.namaPanggil||'—';
-  document.getElementById('hist-kode').textContent=(STATE.kodePIC||'—')+' — '+(STATE.spesialis||'');
+  document.getElementById('hist-kode').textContent=STATE.kodePIC||'—';
   const loadEl=document.getElementById('hist-loading');
   const contEl=document.getElementById('hist-content');
   loadEl.style.display='flex';contEl.style.display='none';
   try{
     const res=await api({action:'getHistory',token:STATE.token,kodePIC:STATE.kodePIC});
     loadEl.style.display='none';contEl.style.display='block';
-    if(!res.success||!res.data.length){contEl.innerHTML='<p style="text-align:center;font-size:13px;color:var(--gray);padding:24px;">Belum ada riwayat absensi</p>';return;}
-    let html=`<div class="rekening-box"><p>Rekening Pembayaran</p><small>${res.bank||'-'} · ${res.cabang||'-'}<br>No. ${res.rekening||'-'}<br>a.n. ${res.atasNama||'-'}</small></div>`;
-    res.data.forEach(p=>{
-      const pct=p.sesiHadir>0?Math.min(100,p.sesiHadir*10):0;
+    if(!res.success||!res.history||!res.history.length){contEl.innerHTML='<p style="text-align:center;font-size:13px;color:var(--gray);padding:24px;">Belum ada riwayat absensi</p>';return;}
+    let html=`<div class="rekening-box"><p>Total Bayaran</p><small style="font-size:16px;font-weight:700;color:var(--orange)">${formatRp(res.totalBayaran||0)}</small><br><small>${res.totalSesi||0} sesi selesai</small></div>`;
+    res.history.forEach(h=>{
       html+=`<div class="rekap-card">
-        <div class="rekap-header"><div><h3>${p.clientName}</h3><small>${p.orderId} · ${p.program}</small></div>
-        <span class="badge badge-orange">${p.sesiHadir} sesi</span></div>
+        <div class="rekap-header"><div><h3>${h.clientName}</h3><small>${h.orderId} · ${h.program}</small></div>
+        <span class="badge badge-orange">${h.status}</span></div>
         <div class="rekap-stats">
-          <div class="rekap-stat"><strong>${p.sesiHadir}</strong><span>Hadir</span></div>
-          <div class="rekap-stat"><strong>${p.biayaPerSesi>0?formatRp(p.biayaPerSesi):'—'}</strong><span>Per sesi</span></div>
-          <div class="rekap-stat"><strong style="color:var(--orange)">${p.totalBayaran>0?formatRp(p.totalBayaran):'—'}</strong><span>Total</span></div>
+          <div class="rekap-stat"><strong>${h.timestamp}</strong><span>Waktu</span></div>
+          <div class="rekap-stat"><strong>${h.biayaSesi>0?formatRp(h.biayaSesi):'—'}</strong><span>Bayaran</span></div>
         </div>
-        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-        ${p.sesiList.slice(0,5).map(s=>`<div class="sesi-item"><div class="sesi-num">${s.noSesi}</div><div class="sesi-info"><p>${s.tanggal}</p><small>Jam ${s.jam} · ${p.lokasi}</small></div>${s.photoUrl?`<a class="sesi-foto" href="${s.photoUrl}" target="_blank">📷 Foto</a>`:''}</div>`).join('')}
-        ${p.sesiList.length>5?`<p style="font-size:12px;color:var(--gray);text-align:center;padding:8px;">+${p.sesiList.length-5} sesi lainnya</p>`:''}
+        <div class="paket-meta"><span>📍 ${h.lokasi}</span><span>📅 ${h.hari}${h.jam?', '+h.jam:''}</span></div>
+        ${h.photoUrl?`<div style="margin-top:8px;"><a href="${h.photoUrl}" target="_blank" style="font-size:12px;color:var(--navy);font-weight:600;">📷 Lihat Foto</a></div>`:''}
       </div>`;
     });
     contEl.innerHTML=html;
+
   }catch(e){loadEl.style.display='none';contEl.style.display='block';contEl.innerHTML='<p style="text-align:center;color:var(--gray);font-size:13px;padding:20px;">Gagal memuat data.</p>';}
 }
 
