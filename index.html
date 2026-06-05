@@ -1273,17 +1273,24 @@ function handlePhoto(e){
 }
 
 // ✅ SUBMIT ABSENSI — dengan foto compression & error detail
+let IS_SUBMITTING = false;
+
 async function submitAbsensi(){
+  // ── BLOKIR DOUBLE-TAP — cek flag sebelum apapun ──
+  if(IS_SUBMITTING) return;
+  IS_SUBMITTING = true;
+
   hideMsg('absen-msg');
-  if(!STATE.currentOrderData)return showMsg('absen-msg','⚠️ Order ID tidak valid','error');
+  if(!STATE.currentOrderData){IS_SUBMITTING=false;return showMsg('absen-msg','⚠️ Order ID tidak valid','error');}
   // ── HARD BLOCK: cek GPS validity sebelum apapun ──
   if(STATE.gpsValid===false){
+    IS_SUBMITTING=false;
     showMsg('absen-msg','🚫 Absensi ditolak — kamu tidak berada di lokasi klien. Pergi ke lokasi yang benar dulu.','error');
     return;
   }
   const photoFile=document.getElementById('photo-input').files[0];
-  if(!photoFile)return showMsg('absen-msg','⚠️ Upload foto kehadiran dulu','error');
-  try{const d=await api({action:'checkDuplicate',orderId:STATE.currentOrderId});if(d.duplicate&&!confirm('⚠️ Kamu sudah absen untuk Order ID ini hari ini.\n\nTetap submit?'))return;}catch(e){}
+  if(!photoFile){IS_SUBMITTING=false;return showMsg('absen-msg','⚠️ Upload foto kehadiran dulu','error');}
+  try{const d=await api({action:'checkDuplicate',orderId:STATE.currentOrderId});if(d.duplicate&&!confirm('⚠️ Kamu sudah absen untuk Order ID ini hari ini.\n\nTetap submit?')){IS_SUBMITTING=false;return;}}catch(e){}
   const btn=document.getElementById('btn-submit');
   btn.disabled=true;
   btn.innerHTML='<span class="spinner"></span> Kompres foto...';
@@ -1302,13 +1309,12 @@ async function submitAbsensi(){
       longitude:STATE.gpsLng||'',
       device:navigator.userAgent
     });
+    IS_SUBMITTING=false;
     btn.disabled=false;btn.innerHTML='✅ Submit Absensi';
     if(!res.success){
       if(res.limitReached){
-        // Paket sudah selesai — tampilkan pesan khusus
         showMsg('absen-msg','📦 '+res.message,'warning');
-        btn.disabled=true;
-        btn.style.opacity='0.4';
+        btn.disabled=true;btn.style.opacity='0.4';
         btn.innerHTML='🚫 Paket Sudah Selesai';
         return;
       }
@@ -1317,6 +1323,7 @@ async function submitAbsensi(){
     }
     document.getElementById('success-modal').classList.add('show');
   }catch(e){
+    IS_SUBMITTING=false;
     btn.disabled=false;btn.innerHTML='✅ Submit Absensi';
     showMsg('absen-msg','❌ Submit gagal: '+(e.message||'Coba lagi'),'error');
   }
