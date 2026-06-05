@@ -701,6 +701,16 @@
   </div>
 </div>
 
+<!-- PHOTO LIGHTBOX MODAL -->
+<div id="photo-modal" onclick="closePhotoModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:1000;align-items:center;justify-content:center;padding:16px;">
+  <div style="position:relative;max-width:92vw;max-height:90vh;" onclick="event.stopPropagation()">
+    <img id="photo-modal-img" src="" alt="Foto Absensi"
+      style="max-width:92vw;max-height:85vh;border-radius:12px;object-fit:contain;display:block;box-shadow:0 8px 40px rgba(0,0,0,.5);">
+    <div id="photo-modal-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;">⏳ Memuat foto...</div>
+    <button onclick="closePhotoModal()" style="position:absolute;top:-14px;right:-14px;background:white;border:none;border-radius:50%;width:34px;height:34px;font-size:20px;font-weight:bold;cursor:pointer;line-height:1;color:#1E1C43;box-shadow:0 2px 8px rgba(0,0,0,.3);">✕</button>
+  </div>
+</div>
+
 <!-- SUCCESS MODAL -->
 <div class="modal-overlay" id="success-modal">
   <div class="modal-box">
@@ -1285,6 +1295,32 @@ function toggleSesi(id, btn, count){
     :'▼ Lihat +'+count+' sesi lainnya';
 }
 
+function openPhotoModal(driveUrl){
+  const modal=document.getElementById('photo-modal');
+  const img=document.getElementById('photo-modal-img');
+  const loading=document.getElementById('photo-modal-loading');
+  // Extract file ID dari Google Drive URL
+  const match=driveUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if(!match){ window.open(driveUrl,'_blank'); return; }
+  const fileId=match[1];
+  const thumbUrl='https://drive.google.com/thumbnail?id='+fileId+'&sz=w1000';
+  img.style.display='none';
+  loading.style.display='flex';
+  modal.style.display='flex';
+  document.body.style.overflow='hidden';
+  img.onload=()=>{ loading.style.display='none'; img.style.display='block'; };
+  img.onerror=()=>{ loading.innerHTML='⚠️ Foto gagal dimuat'; };
+  img.src=thumbUrl;
+}
+
+function closePhotoModal(){
+  const modal=document.getElementById('photo-modal');
+  modal.style.display='none';
+  document.getElementById('photo-modal-img').src='';
+  document.getElementById('photo-modal-loading').innerHTML='⏳ Memuat foto...';
+  document.body.style.overflow='';
+}
+
 async function submitAbsensi(){
   // ── BLOKIR DOUBLE-TAP — cek flag sebelum apapun ──
   if(IS_SUBMITTING) return;
@@ -1414,7 +1450,7 @@ async function loadHistory(){
           <div class="sesi-item">
             <div class="sesi-num">${s.noSesi}</div>
             <div class="sesi-info"><p>${s.timestamp}</p></div>
-            ${s.photoUrl?'<a class="sesi-foto" href="'+s.photoUrl+'" target="_blank" style="display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;min-width:44px;"><span style="font-size:20px;">📷</span>Lihat Foto</a>':''}
+            ${s.photoUrl?'<a class="sesi-foto" href="javascript:void(0)" onclick="openPhotoModal(\''+s.photoUrl+'\')" style="display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;min-width:44px;"><span style="font-size:20px;">📷</span>Lihat Foto</a>':''}
           </div>`;
         const shown=p.sesiList.slice(0,5);
         const extra=p.sesiList.slice(5);
