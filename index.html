@@ -656,11 +656,7 @@
 
 <!-- PAGE SIGN — TTD Digital & Ajukan Pembayaran -->
 <div class="page" id="page-sign">
-  <div class="topbar">
-    <button class="btn-back" onclick="showPage('history')">← Kembali</button>
-    <span class="topbar-title">Ajukan Rekap & Pembayaran</span>
-    <div style="width:80px;"></div>
-  </div>
+  <div class="topbar"><button class="topbar-back" onclick="showPage('history')"><span style="font-size:18px;line-height:1;">‹</span> Kembali</button><div class="topbar-title">Ajukan Rekap & Pembayaran</div><div style="width:80px;"></div></div>
   <div class="hero"><h1 id="sign-client-name">—</h1><p id="sign-order-id" style="opacity:.8;font-size:13px;">—</p></div>
   <div class="card-body">
     <div id="sign-loading" class="info-box info-navy"><div class="info-box-icon">⏳</div><p>Memuat data rekap...</p></div>
@@ -1564,43 +1560,74 @@ async function goToSign(orderId, clientNameEncoded){
 }
 
 function setupSignCanvas(){
-  const canvas = document.getElementById('sign-canvas');
-  const ctx    = canvas.getContext('2d');
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.strokeStyle='#1E1C43'; ctx.lineWidth=2.5;
-  ctx.lineCap='round'; ctx.lineJoin='round';
-  SIGN_DRAWING=false; SIGN_SIGNED=false;
-  document.getElementById('sign-placeholder').style.display='block';
+  // Clone canvas untuk hapus event listeners lama
+  const old = document.getElementById('sign-canvas');
+  const fresh = old.cloneNode(true);
+  old.parentNode.replaceChild(fresh, old);
 
-  const getPos=(e)=>{
-    const r=canvas.getBoundingClientRect();
-    const sx=canvas.width/r.width, sy=canvas.height/r.height;
+  // Pakai context dari fresh canvas (BUKAN old canvas)
+  const ctx = fresh.getContext('2d');
+  ctx.clearRect(0, 0, fresh.width, fresh.height);
+  ctx.strokeStyle = '#111111';
+  ctx.lineWidth   = 2.5;
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+
+  SIGN_DRAWING = false;
+  SIGN_SIGNED  = false;
+  const ph = document.getElementById('sign-placeholder');
+  if(ph) ph.style.display = 'block';
+
+  const getPos = (e) => {
+    const r  = fresh.getBoundingClientRect();
+    const sx = fresh.width  / r.width;
+    const sy = fresh.height / r.height;
     return e.touches
-      ? {x:(e.touches[0].clientX-r.left)*sx, y:(e.touches[0].clientY-r.top)*sy}
-      : {x:(e.clientX-r.left)*sx, y:(e.clientY-r.top)*sy};
+      ? { x: (e.touches[0].clientX - r.left) * sx, y: (e.touches[0].clientY - r.top) * sy }
+      : { x: (e.clientX - r.left) * sx,             y: (e.clientY - r.top) * sy };
   };
-  const start=(e)=>{e.preventDefault();SIGN_DRAWING=true;document.getElementById('sign-placeholder').style.display='none';const p=getPos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);};
-  const draw=(e)=>{e.preventDefault();if(!SIGN_DRAWING)return;const p=getPos(e);ctx.lineTo(p.x,p.y);ctx.stroke();SIGN_SIGNED=true;};
-  const end=(e)=>{SIGN_DRAWING=false;};
 
-  // Remove old listeners via clone
-  const fresh=canvas.cloneNode(true);
-  canvas.parentNode.replaceChild(fresh,canvas);
-  fresh.getContext('2d').strokeStyle='#1E1C43';fresh.getContext('2d').lineWidth=2.5;
-  fresh.getContext('2d').lineCap='round';fresh.getContext('2d').lineJoin='round';
-  fresh.addEventListener('mousedown',start);
-  fresh.addEventListener('mousemove',draw);
-  fresh.addEventListener('mouseup',end);
-  fresh.addEventListener('touchstart',start,{passive:false});
-  fresh.addEventListener('touchmove',draw,{passive:false});
-  fresh.addEventListener('touchend',end);
+  const start = (e) => {
+    e.preventDefault();
+    SIGN_DRAWING = true;
+    if(ph) ph.style.display = 'none';
+    const p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  };
+
+  const draw = (e) => {
+    e.preventDefault();
+    if(!SIGN_DRAWING) return;
+    const p = getPos(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    SIGN_SIGNED = true;
+  };
+
+  const end = () => { SIGN_DRAWING = false; };
+
+  fresh.addEventListener('mousedown',  start);
+  fresh.addEventListener('mousemove',  draw);
+  fresh.addEventListener('mouseup',    end);
+  fresh.addEventListener('touchstart', start, { passive: false });
+  fresh.addEventListener('touchmove',  draw,  { passive: false });
+  fresh.addEventListener('touchend',   end);
 }
 
 function clearSignature(){
-  const canvas=document.getElementById('sign-canvas');
-  canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
-  SIGN_SIGNED=false;
-  document.getElementById('sign-placeholder').style.display='block';
+  const canvas = document.getElementById('sign-canvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Reset properties karena getContext bisa return cached state
+  ctx.strokeStyle = '#111111';
+  ctx.lineWidth   = 2.5;
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+  SIGN_SIGNED = false;
+  const ph = document.getElementById('sign-placeholder');
+  if(ph) ph.style.display = 'block';
 }
 
 async function doSubmitPaymentRequest(){
@@ -1608,8 +1635,8 @@ async function doSubmitPaymentRequest(){
   const btn=document.getElementById('btn-submit-pay');
   btn.disabled=true; btn.textContent='⏳ Memproses & Generate PDF...';
   try{
-    const canvas=document.getElementById('sign-canvas');
-    const sig=canvas.toDataURL('image/png');
+    const canvas = document.getElementById('sign-canvas');
+    const sig = canvas.toDataURL('image/png');
     const res=await apiPost({
       action:'submitPaymentRequest',
       token:STATE.token,
