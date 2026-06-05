@@ -266,6 +266,31 @@
       .hero h1{font-size:28px;}
       .card-body{padding:40px 44px 100px;}
     }
+
+    /* ── PAYMENT STATUS ──────────────────────── */
+    .pay-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;margin-top:6px;}
+    .pay-pending{background:rgba(230,81,0,.1);color:#e65100;border:1px solid rgba(230,81,0,.25);}
+    .pay-paid{background:var(--green-bg);color:var(--green-text);border:1px solid rgba(34,197,94,.3);}
+    .btn-ajukan{width:100%;margin-top:12px;padding:11px 16px;background:var(--navy);color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:.2px;transition:opacity .2s;}
+    .btn-ajukan:active{opacity:.85;}
+    .btn-ajukan.done-btn{background:var(--green);color:#fff;}
+
+    /* ── PAGE SIGN ───────────────────────────── */
+    #page-sign .hero{padding:16px 20px 40px;}
+    #page-sign .hero h1{font-size:17px;}
+    .rekap-preview-box{background:var(--light);border-radius:14px;padding:14px 16px;margin-bottom:14px;border:1px solid var(--border);}
+    .rekap-field{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--border);}
+    .rekap-field:last-child{border-bottom:none;}
+    .rekap-fl{font-size:12px;color:var(--gray);}
+    .rekap-fv{font-size:12px;font-weight:600;text-align:right;max-width:58%;word-break:break-word;}
+    .rekap-fv.total{font-size:14px;color:var(--navy);}
+    .sign-canvas-wrap{background:#fff;border:2px dashed var(--border);border-radius:12px;overflow:hidden;margin:10px 0 8px;cursor:crosshair;position:relative;}
+    .sign-canvas-wrap canvas{display:block;width:100%;height:140px;touch-action:none;}
+    .sign-placeholder{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;color:#cbd5e1;pointer-events:none;text-align:center;line-height:1.6;}
+    .btn-clear-sign{width:100%;padding:9px;background:transparent;border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--gray);cursor:pointer;margin-bottom:10px;}
+    .btn-submit-pay{width:100%;padding:15px;background:var(--navy);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity .2s;}
+    .btn-submit-pay:active{opacity:.85;}
+    .btn-submit-pay:disabled{background:#94a3b8;cursor:default;}
   </style>
 </head>
 <body>
@@ -629,6 +654,53 @@
   </div>
 </div>
 
+<!-- PAGE SIGN — TTD Digital & Ajukan Pembayaran -->
+<div class="page" id="page-sign">
+  <div class="topbar">
+    <button class="btn-back" onclick="showPage('history')">← Kembali</button>
+    <span class="topbar-title">Ajukan Rekap & Pembayaran</span>
+    <div style="width:80px;"></div>
+  </div>
+  <div class="hero"><h1 id="sign-client-name">—</h1><p id="sign-order-id" style="opacity:.8;font-size:13px;">—</p></div>
+  <div class="card-body">
+    <div id="sign-loading" class="info-box info-navy"><div class="info-box-icon">⏳</div><p>Memuat data rekap...</p></div>
+    <div id="sign-content" style="display:none;">
+
+      <!-- Preview data rekap -->
+      <p style="font-size:12px;font-weight:700;color:var(--gray);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Detail Rekap</p>
+      <div class="rekap-preview-box" id="sign-preview-fields"></div>
+
+      <!-- Sesi list -->
+      <p style="font-size:12px;font-weight:700;color:var(--gray);margin:14px 0 8px;text-transform:uppercase;letter-spacing:.5px;">Riwayat Sesi</p>
+      <div class="rekap-card" style="margin-bottom:16px;">
+        <div id="sign-sesi-list"></div>
+      </div>
+
+      <!-- Signature Canvas -->
+      <p style="font-size:12px;font-weight:700;color:var(--gray);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Tanda Tangan Digital</p>
+      <p style="font-size:11px;color:var(--gray);margin-bottom:0;">Tanda tangan menggunakan jari atau stylus di kotak di bawah ini</p>
+      <div class="sign-canvas-wrap">
+        <canvas id="sign-canvas" width="700" height="200"></canvas>
+        <div class="sign-placeholder" id="sign-placeholder">✍ Tanda tangan di sini</div>
+      </div>
+      <button class="btn-clear-sign" onclick="clearSignature()">🗑 Bersihkan Tanda Tangan</button>
+
+      <!-- Catatan -->
+      <div style="background:#EEEEF5;border-radius:10px;padding:12px 14px;margin-bottom:16px;border-left:3px solid var(--navy);">
+        <p style="font-size:12px;color:var(--navy);line-height:1.7;margin:0;">
+          Dengan mengirim pengajuan ini, Anda menyatakan bahwa data absensi di atas adalah benar.<br>
+          PDF rekap yang ditandatangani akan dikirim otomatis ke admin EFM untuk diproses.
+        </p>
+      </div>
+
+      <!-- Submit button -->
+      <button class="btn-submit-pay" id="btn-submit-pay" onclick="doSubmitPaymentRequest()">
+        📨 Kirim Pengajuan ke Admin
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- SUCCESS MODAL -->
 <div class="modal-overlay" id="success-modal">
   <div class="modal-box">
@@ -646,7 +718,7 @@
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycbw9x7h3ybotWARoncs4nh12Q9dAZCUEMA5tfRkErVelDs58xbGIH9ZgOhN-DooJ9QALZg/exec';
 const COOKIE_KEY='EFM_SESSION';
-let STATE={token:null,kodePIC:null,namaPanggil:null,nomorID:null,currentOrderId:null,currentOrderData:null,gpsLat:null,gpsLng:null,orderLat:null,orderLng:null,gpsValid:null,resetRequestId:null,resetPolling:null,countdownInterval:null};
+let STATE={token:null,kodePIC:null,namaPanggil:null,nomorID:null,currentOrderId:null,currentOrderData:null,gpsLat:null,gpsLng:null,orderLat:null,orderLng:null,gpsValid:null,resetRequestId:null,resetPolling:null,countdownInterval:null,signOrderId:null,signPreviewData:null};
 let cameraStream=null,scanInterval=null;
 
 function setCookie(n,v,d){const e=new Date();e.setTime(e.getTime()+(d*864e5));document.cookie=n+'='+encodeURIComponent(v)+';expires='+e.toUTCString()+';path=/;SameSite=Strict';}
@@ -1274,71 +1346,67 @@ async function loadHistory(){
       return;
     }
 
-    // Rekap summary box
-    let html=`<div class="rekening-box">
-      <p>Rekap Bayaran</p>
-      <small>
-        Total sesi selesai: <strong>${res.grandTotalSesi||0} sesi</strong><br>
-        Total bayaran: <strong style="color:var(--orange);">${formatRp(res.grandTotalBayaran||0)}</strong>
-      </small>
-    </div>`;
-
+    // ── Render cards per klien (tanpa rekap box atas) ──
+    let html='';
     res.data.forEach(p=>{
-      const pct    = p.totalSesi>0 ? Math.min(100, Math.round(p.sesiSelesai/p.totalSesi*100)) : 0;
-      const isDone = p.statusPaket==='DONE';
-      const fillClass = isDone ? 'progress-fill done' : 'progress-fill';
+      const isDone   = p.statusPaket==='DONE';
+      const pct      = p.totalSesi>0 ? Math.min(100,Math.round(p.sesiSelesai/p.totalSesi*100)) : 0;
+      const fillCls  = isDone ? 'progress-fill done' : 'progress-fill';
+      const payStatus= p.paymentStatus;  // null | PENDING | PAID
 
-      // Sesi list — tampilkan max 5, sisanya "+N lagi"
+      // Badge status paket
+      const paketBadge = isDone
+        ? '<span class="badge" style="background:var(--green-bg);color:var(--green-text);border:1px solid rgba(34,197,94,.3);">✓ DONE</span>'
+        : '<span class="badge badge-orange">'+p.sesiSelesai+' sesi</span>';
+
+      // Badge pembayaran (kalau ada)
+      let payBadge='';
+      if(payStatus==='PAID'){
+        payBadge='<div class="pay-badge pay-paid">✅ Pembayaran Lunas ('+p.paymentNoRekap+')</div>';
+      }else if(payStatus==='PENDING'){
+        payBadge='<div class="pay-badge pay-pending">⏳ Menunggu Pembayaran ('+p.paymentNoRekap+')</div>';
+      }
+
+      // Tombol Ajukan (hanya DONE + belum ada payment request)
+      let btnAjukan='';
+      if(isDone && !payStatus){
+        btnAjukan='<button class="btn-ajukan" onclick="goToSign(\''+p.orderId+'\',\''+encodeURIComponent(p.clientName)+'\')">📋 Ajukan Rekap Absen & Pembayaran</button>';
+      }else if(isDone && payStatus==='PAID'){
+        btnAjukan='<button class="btn-ajukan done-btn" disabled>✅ Pembayaran Selesai</button>';
+      }else if(isDone && payStatus==='PENDING'){
+        btnAjukan='<a href="'+p.paymentPdfUrl+'" target="_blank" style="display:block;text-align:center;font-size:12px;color:var(--navy);font-weight:500;margin-top:10px;padding:8px;border:1px solid var(--border);border-radius:8px;text-decoration:none;">📄 Lihat PDF Rekap</a>';
+      }
+
+      // Sesi list (max 5)
       let sesiHtml='';
-      if(p.sesiList && p.sesiList.length>0){
-        const shown = p.sesiList.slice(0,5);
-        sesiHtml = shown.map(s=>`
+      if(p.sesiList&&p.sesiList.length>0){
+        sesiHtml=p.sesiList.slice(0,5).map(s=>`
           <div class="sesi-item">
             <div class="sesi-num">${s.noSesi}</div>
-            <div class="sesi-info">
-              <p>${s.timestamp}</p>
-              <small>${p.hari||''}${p.jam?', '+p.jam:''} · ${p.lokasi||'-'}</small>
-            </div>
-            ${s.photoUrl?`<a class="sesi-foto" href="${s.photoUrl}" target="_blank">📷 Foto</a>`:''}
+            <div class="sesi-info"><p>${s.timestamp}</p><small>${p.hari||''}${p.jam?', '+p.jam:''} · ${p.lokasi||'-'}</small></div>
+            ${s.photoUrl?'<a class="sesi-foto" href="'+s.photoUrl+'" target="_blank">📷 Foto</a>':''}
           </div>`).join('');
-        if(p.sesiList.length>5){
-          sesiHtml+=`<p style="font-size:11px;color:var(--gray);text-align:center;padding:6px 0;">+${p.sesiList.length-5} sesi lainnya</p>`;
-        }
-      } else {
-        sesiHtml=`<p style="font-size:11px;color:var(--gray);text-align:center;padding:6px 0;">Belum ada sesi tercatat</p>`;
+        if(p.sesiList.length>5)sesiHtml+='<p style="font-size:11px;color:var(--gray);text-align:center;padding:6px 0;">+'+( p.sesiList.length-5)+' sesi lainnya</p>';
+      }else{
+        sesiHtml='<p style="font-size:11px;color:var(--gray);text-align:center;padding:6px 0;">Belum ada sesi tercatat</p>';
       }
 
       html+=`<div class="rekap-card">
         <div class="rekap-header">
-          <div>
-            <h3>${p.clientName}</h3>
-            <small>${p.orderId} · ${p.program}</small>
-          </div>
-          <span class="badge badge-orange">${p.sesiSelesai} sesi</span>
+          <div><h3>${p.clientName}</h3><small>${p.orderId} · ${p.program}</small>${payBadge}</div>
+          ${paketBadge}
         </div>
         <div class="rekap-stats">
-          <div class="rekap-stat">
-            <strong>${p.sesiSelesai}</strong>
-            <span>Hadir</span>
-          </div>
-          <div class="rekap-stat">
-            <strong style="font-size:13px;">${p.biayaSesi>0?formatRp(p.biayaSesi):'—'}</strong>
-            <span>Per sesi</span>
-          </div>
-          <div class="rekap-stat">
-            <strong style="font-size:13px;${p.totalBayaran>0?'color:var(--orange);':''}">${p.totalBayaran>0?formatRp(p.totalBayaran):'—'}</strong>
-            <span>Total</span>
-          </div>
+          <div class="rekap-stat"><strong>${p.sesiSelesai}</strong><span>Hadir</span></div>
+          <div class="rekap-stat"><strong style="font-size:13px;">${p.biayaSesi>0?formatRp(p.biayaSesi):'—'}</strong><span>Per sesi</span></div>
+          <div class="rekap-stat"><strong style="font-size:13px;${p.totalBayaran>0?'color:var(--navy);':''}">${p.totalBayaran>0?formatRp(p.totalBayaran):'—'}</strong><span>Total</span></div>
         </div>
-        <div class="progress-bar"><div class="${fillClass}" style="width:${pct}%"></div></div>
-        <div class="paket-meta">
-          <span>📍 ${p.lokasi||'-'}</span>
-          <span>📅 ${p.hari||'-'}${p.jam?', '+p.jam:''}</span>
-        </div>
+        <div class="progress-bar"><div class="${fillCls}" style="width:${pct}%"></div></div>
+        <div class="paket-meta"><span>📍 ${p.lokasi||'-'}</span><span>📅 ${p.hari||'-'}${p.jam?', '+p.jam:''}</span></div>
         <div style="margin-top:10px;">${sesiHtml}</div>
+        ${btnAjukan}
       </div>`;
     });
-
     contEl.innerHTML=html;
   }catch(e){
     loadEl.style.display='none';
@@ -1348,6 +1416,125 @@ async function loadHistory(){
 }
 
 function formatRp(n){if(!n||n===0)return'Rp 0';if(n>=1000000)return'Rp '+(n/1000000).toFixed(1).replace('.0','')+'jt';if(n>=1000)return'Rp '+(n/1000).toFixed(0)+'rb';return'Rp '+n.toLocaleString('id-ID');}
+
+// ── SIGN PAGE — Ajukan Rekap & Pembayaran ───────────────────
+let SIGN_DRAWING=false, SIGN_SIGNED=false;
+
+async function goToSign(orderId, clientNameEncoded){
+  STATE.signOrderId = orderId;
+  STATE.signPreviewData = null;
+  document.getElementById('sign-client-name').textContent = decodeURIComponent(clientNameEncoded)||'—';
+  document.getElementById('sign-order-id').textContent    = orderId;
+  document.getElementById('sign-loading').style.display   = 'flex';
+  document.getElementById('sign-content').style.display   = 'none';
+  showPage('sign');
+
+  try{
+    const res = await api({action:'getRekapPreview',token:STATE.token,kodePIC:STATE.kodePIC,orderId});
+    if(!res.success){ alert(res.message||'Gagal memuat data rekap'); showPage('history'); return; }
+    STATE.signPreviewData = res;
+
+    // Render preview fields
+    const frp = (n)=>n>0?formatRp(n):'—';
+    const fields = [
+      ['ID Order',          res.orderId],
+      ['Nama Pendaftar',    res.namaPendaftar||'—'],
+      ['Nama Klien',        res.namaKlien],
+      ['Program',           res.namaProgram],
+      ['Hari & Jam',        (res.hari||'—')+' · '+(res.jam||'—')],
+      ['Lokasi',            res.lokasi||'—'],
+      ['Sesi Selesai',      res.sesiSelesai+' / '+res.totalSesi+' sesi'],
+      ['Biaya Per Sesi',    frp(res.biayaSesi)],
+      ['Total Bayaran',     frp(res.totalBayaran),'total'],
+      ['Bank',              (res.namaBank||'—')+' · '+(res.noRekening||'—')],
+      ['Atas Nama',         res.atasNama||'—'],
+    ];
+    document.getElementById('sign-preview-fields').innerHTML =
+      fields.map(([l,v,cls])=>
+        '<div class="rekap-field"><span class="rekap-fl">'+l+'</span><span class="rekap-fv'+(cls?' '+cls:'')+'">'+v+'</span></div>'
+      ).join('');
+
+    // Render sesi list
+    const sl = res.sesiList||[];
+    document.getElementById('sign-sesi-list').innerHTML = sl.length
+      ? sl.map(s=>'<div class="sesi-item"><div class="sesi-num">'+s.noSesi+'</div><div class="sesi-info"><p>'+s.timestamp+'</p><small>'+s.status+'</small></div><span>'+(s.hasPhoto?'📷':'')+'</span></div>').join('')
+      : '<p style="font-size:12px;color:var(--gray);text-align:center;padding:8px;">Belum ada sesi tercatat</p>';
+
+    document.getElementById('sign-loading').style.display = 'none';
+    document.getElementById('sign-content').style.display = 'block';
+    setupSignCanvas();
+  }catch(e){
+    alert('Terjadi kesalahan: '+e.message);
+    showPage('history');
+  }
+}
+
+function setupSignCanvas(){
+  const canvas = document.getElementById('sign-canvas');
+  const ctx    = canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle='#1E1C43'; ctx.lineWidth=2.5;
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  SIGN_DRAWING=false; SIGN_SIGNED=false;
+  document.getElementById('sign-placeholder').style.display='block';
+
+  const getPos=(e)=>{
+    const r=canvas.getBoundingClientRect();
+    const sx=canvas.width/r.width, sy=canvas.height/r.height;
+    return e.touches
+      ? {x:(e.touches[0].clientX-r.left)*sx, y:(e.touches[0].clientY-r.top)*sy}
+      : {x:(e.clientX-r.left)*sx, y:(e.clientY-r.top)*sy};
+  };
+  const start=(e)=>{e.preventDefault();SIGN_DRAWING=true;document.getElementById('sign-placeholder').style.display='none';const p=getPos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);};
+  const draw=(e)=>{e.preventDefault();if(!SIGN_DRAWING)return;const p=getPos(e);ctx.lineTo(p.x,p.y);ctx.stroke();SIGN_SIGNED=true;};
+  const end=(e)=>{SIGN_DRAWING=false;};
+
+  // Remove old listeners via clone
+  const fresh=canvas.cloneNode(true);
+  canvas.parentNode.replaceChild(fresh,canvas);
+  fresh.getContext('2d').strokeStyle='#1E1C43';fresh.getContext('2d').lineWidth=2.5;
+  fresh.getContext('2d').lineCap='round';fresh.getContext('2d').lineJoin='round';
+  fresh.addEventListener('mousedown',start);
+  fresh.addEventListener('mousemove',draw);
+  fresh.addEventListener('mouseup',end);
+  fresh.addEventListener('touchstart',start,{passive:false});
+  fresh.addEventListener('touchmove',draw,{passive:false});
+  fresh.addEventListener('touchend',end);
+}
+
+function clearSignature(){
+  const canvas=document.getElementById('sign-canvas');
+  canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+  SIGN_SIGNED=false;
+  document.getElementById('sign-placeholder').style.display='block';
+}
+
+async function doSubmitPaymentRequest(){
+  if(!SIGN_SIGNED){ alert('Tanda tangan wajib diisi sebelum mengirim.'); return; }
+  const btn=document.getElementById('btn-submit-pay');
+  btn.disabled=true; btn.textContent='⏳ Memproses & Generate PDF...';
+  try{
+    const canvas=document.getElementById('sign-canvas');
+    const sig=canvas.toDataURL('image/png');
+    const res=await apiPost({
+      action:'submitPaymentRequest',
+      token:STATE.token,
+      kodePIC:STATE.kodePIC,
+      orderId:STATE.signOrderId,
+      signatureBase64:sig
+    });
+    if(res.success){
+      btn.textContent='✅ Berhasil!';
+      setTimeout(()=>{ showPage('history'); },1800);
+    }else{
+      alert('❌ '+( res.message||'Gagal mengirim pengajuan'));
+      btn.disabled=false; btn.textContent='📨 Kirim Pengajuan ke Admin';
+    }
+  }catch(e){
+    alert('Terjadi kesalahan: '+e.message);
+    btn.disabled=false; btn.textContent='📨 Kirim Pengajuan ke Admin';
+  }
+}
 
 // ── SPLASH SCREEN PARTICLES ──────────────────
 (function(){
