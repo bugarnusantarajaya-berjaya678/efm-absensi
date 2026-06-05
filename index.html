@@ -1033,11 +1033,11 @@ function renderPaketAktif(packets){
     const pct=p.totalSesi>0?Math.min(100,Math.round((p.sesiSelesai/p.totalSesi)*100)):0;
     return`<div class="paket-card">
       <div class="paket-header">
-        <div><div class="paket-client">${p.clientName}</div><div class="paket-program">${p.program}</div></div>
-        <div class="paket-badge">${p.sesiSelesai}/${p.totalSesi} sesi</div>
+        <div><div class="paket-client">${p.clientName}</div><div class="paket-program">${p.namaLatihan||p.program}</div></div>
+        <div class="paket-badge">${p.sesiSelesai}/${p.totalSesi||'?'} sesi</div>
       </div>
       <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-      <div class="paket-meta"><span>📍 ${p.lokasi}</span><span>📅 ${p.hari}${p.jam?', '+p.jam:''}</span></div>
+      <div class="paket-meta"><span>📍 ${p.lokasi}</span><span>⏱ ${p.masaHabis||p.hari||'-'}</span></div>
       ${p.tglSelesai?`<div class="paket-tgl">⏰ Berakhir: ${p.tglSelesai}</div>`:''}
       <div class="paket-biaya">${fmtRpShort(p.biayaPaket)}</div>
     </div>`;
@@ -1349,15 +1349,19 @@ async function loadHistory(){
     // ── Render cards per klien (tanpa rekap box atas) ──
     let html='';
     res.data.forEach(p=>{
-      const isDone   = p.statusPaket==='DONE';
-      const pct      = p.totalSesi>0 ? Math.min(100,Math.round(p.sesiSelesai/p.totalSesi*100)) : 0;
-      const fillCls  = isDone ? 'progress-fill done' : 'progress-fill';
-      const payStatus= p.paymentStatus;  // null | PENDING | PAID
+      const isDone     = p.statusPaket === 'SELESAI';
+      const isBatal    = p.statusPaket === 'BATAL';
+      const isComplete = isDone || (p.totalSesi > 0 && p.sesiSelesai >= p.totalSesi);
+      const pct        = p.totalSesi > 0 ? Math.min(100, Math.round(p.sesiSelesai / p.totalSesi * 100)) : (p.sesiSelesai > 0 ? 100 : 0);
+      const fillCls    = isComplete ? 'progress-fill done' : 'progress-fill';
+      const payStatus  = p.paymentStatus;
 
       // Badge status paket
       const paketBadge = isDone
-        ? '<span class="badge" style="background:var(--green-bg);color:var(--green-text);border:1px solid rgba(34,197,94,.3);">✓ DONE</span>'
-        : '<span class="badge badge-orange">'+p.sesiSelesai+' sesi</span>';
+        ? '<span class="badge" style="background:var(--green-bg);color:var(--green-text);border:1px solid rgba(34,197,94,.3);">✓ SELESAI</span>'
+        : isBatal
+          ? '<span class="badge" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;">BATAL</span>'
+          : '<span class="badge badge-orange">'+p.sesiSelesai+'/'+(p.totalSesi||'?')+' sesi</span>';
 
       // Badge pembayaran (kalau ada)
       let payBadge='';
@@ -1367,18 +1371,21 @@ async function loadHistory(){
         payBadge='<div class="pay-badge pay-pending">⏳ Menunggu Pembayaran ('+p.paymentNoRekap+')</div>';
       }
 
-      // Tombol Ajukan — selalu tampil, disabled kalau belum DONE
+      // Tombol Ajukan — selalu tampil, disabled kalau belum selesai
       let btnAjukan='';
-      const sisaSesi = p.totalSesi - p.sesiSelesai;
-      if(!isDone && !payStatus){
-        // Paket masih berjalan — tampil tapi disabled + info sisa sesi
+      const sisaSesi = p.totalSesi > 0 ? Math.max(0, p.totalSesi - p.sesiSelesai) : 0;
+      if(!isComplete && !payStatus){
+        const infoTeks = sisaSesi > 0
+          ? sisaSesi + ' sesi lagi untuk selesaikan paket'
+          : 'Belum ada sesi tercatat';
         btnAjukan='<button class="btn-ajukan" disabled style="background:#94a3b8;cursor:not-allowed;opacity:1;">📋 Ajukan Rekap & Pembayaran</button>'
-          +'<p style="font-size:11px;color:var(--gray);text-align:center;margin-top:6px;">'+sisaSesi+' sesi lagi untuk selesaikan paket</p>';
-      }else if(isDone && !payStatus){
+          +'<p style="font-size:11px;color:var(--gray);text-align:center;margin-top:6px;">'+infoTeks+'</p>';
+      }else if(isComplete && !payStatus){
+        // Semua sesi selesai, belum ajukan — AKTIF
         btnAjukan='<button class="btn-ajukan" onclick="goToSign(\''+p.orderId+'\',\''+encodeURIComponent(p.clientName)+'\')">📋 Ajukan Rekap Absen & Pembayaran</button>';
-      }else if(isDone && payStatus==='PAID'){
+      }else if(payStatus==='PAID'){
         btnAjukan='<button class="btn-ajukan done-btn" disabled>✅ Pembayaran Selesai</button>';
-      }else if(isDone && payStatus==='PENDING'){
+      }else if(payStatus==='PENDING'){
         btnAjukan='<button class="btn-ajukan" disabled style="background:#e65100;cursor:not-allowed;opacity:1;">⏳ Menunggu Konfirmasi Pembayaran</button>'
           +'<a href="'+p.paymentPdfUrl+'" target="_blank" style="display:block;text-align:center;font-size:12px;color:var(--navy);font-weight:500;margin-top:8px;padding:8px;border:1px solid var(--border);border-radius:8px;text-decoration:none;">📄 Lihat PDF Rekap</a>';
       }
@@ -1408,7 +1415,7 @@ async function loadHistory(){
           <div class="rekap-stat"><strong style="font-size:13px;${p.totalBayaran>0?'color:var(--navy);':''}">${p.totalBayaran>0?formatRp(p.totalBayaran):'—'}</strong><span>Total</span></div>
         </div>
         <div class="progress-bar"><div class="${fillCls}" style="width:${pct}%"></div></div>
-        <div class="paket-meta"><span>📍 ${p.lokasi||'-'}</span><span>📅 ${p.hari||'-'}${p.jam?', '+p.jam:''}</span></div>
+        <div class="paket-meta"><span>📍 ${p.lokasi||'-'}</span><span>📋 ${p.totalSesi||'?'} sesi · ${p.masaHabis||'-'}</span></div>
         <div style="margin-top:10px;">${sesiHtml}</div>
         ${btnAjukan}
       </div>`;
@@ -1446,10 +1453,13 @@ async function goToSign(orderId, clientNameEncoded){
       ['ID Order',          res.orderId],
       ['Nama Pendaftar',    res.namaPendaftar||'—'],
       ['Nama Klien',        res.namaKlien],
+      ['Nama Latihan',    res.namaLatihan||'—'],
       ['Program',           res.namaProgram],
       ['Hari & Jam',        (res.hari||'—')+' · '+(res.jam||'—')],
       ['Lokasi',            res.lokasi||'—'],
-      ['Sesi Selesai',      res.sesiSelesai+' / '+res.totalSesi+' sesi'],
+      ['Masa Habis Paket',  res.masaHabis||'—'],
+      ['Jumlah Sesi',       (res.totalSesi||'?')+' sesi'],
+      ['Sesi Tercatat',     res.sesiSelesai+' sesi'],
       ['Biaya Per Sesi',    frp(res.biayaSesi)],
       ['Total Bayaran',     frp(res.totalBayaran),'total'],
       ['Bank',              (res.namaBank||'—')+' · '+(res.noRekening||'—')],
