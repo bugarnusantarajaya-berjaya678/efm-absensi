@@ -1321,6 +1321,21 @@ function closePhotoModal(){
   document.body.style.overflow='';
 }
 
+function formatSesiTimestamp(ts){
+  // Input: "04/06/2026 19:59"  →  Output: "Selasa, 4 Juni 2026 jam 19:59"
+  if(!ts) return ts;
+  const [datePart, timePart] = ts.split(' ');
+  if(!datePart) return ts;
+  const [dd, mm, yyyy] = datePart.split('/');
+  if(!dd||!mm||!yyyy) return ts;
+  const date   = new Date(parseInt(yyyy), parseInt(mm)-1, parseInt(dd));
+  const days   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const months = ['Januari','Februari','Maret','April','Mei','Juni',
+                  'Juli','Agustus','September','Oktober','November','Desember'];
+  return days[date.getDay()] + ', ' + parseInt(dd) + ' ' + months[date.getMonth()] +
+         ' ' + yyyy + ' jam ' + (timePart||'');
+}
+
 async function submitAbsensi(){
   // ── BLOKIR DOUBLE-TAP — cek flag sebelum apapun ──
   if(IS_SUBMITTING) return;
@@ -1449,7 +1464,7 @@ async function loadHistory(){
         const renderSesi=(s)=>`
           <div class="sesi-item">
             <div class="sesi-num">${s.noSesi}</div>
-            <div class="sesi-info"><p>${s.timestamp}</p></div>
+            <div class="sesi-info"><p>${formatSesiTimestamp(s.timestamp)}</p></div>
             ${s.photoUrl?'<a class="sesi-foto" href="javascript:void(0)" onclick="openPhotoModal(\''+s.photoUrl+'\')" style="display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;min-width:44px;"><span style="font-size:20px;">📷</span>Lihat Foto</a>':''}
           </div>`;
         const shown=p.sesiList.slice(0,5);
