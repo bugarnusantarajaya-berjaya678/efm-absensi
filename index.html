@@ -1390,7 +1390,7 @@ async function loadHistory(){
           <div class="sesi-item">
             <div class="sesi-num">${s.noSesi}</div>
             <div class="sesi-info"><p>${s.timestamp}</p><small>${p.hari||''}${p.jam?', '+p.jam:''} · ${p.lokasi||'-'}</small></div>
-            ${s.photoUrl?'<a class="sesi-foto" href="'+s.photoUrl+'" target="_blank">📷 Foto</a>':''}
+            ${s.photoUrl?'<a class="sesi-foto" href="'+s.photoUrl+'" target="_blank" style="font-size:13px;padding:4px 8px;">📷 Lihat Foto</a>':''}
           </div>`).join('');
         if(p.sesiList.length>5)sesiHtml+='<p style="font-size:11px;color:var(--gray);text-align:center;padding:6px 0;">+'+( p.sesiList.length-5)+' sesi lainnya</p>';
       }else{
