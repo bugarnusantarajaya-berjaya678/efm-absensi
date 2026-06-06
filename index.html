@@ -1473,7 +1473,7 @@ async function loadHistory(){
         }
       }else if(payStatus==='PENDING'){
         btnAjukan='<button class="btn-ajukan" disabled style="background:#e65100;cursor:not-allowed;opacity:1;">⏳ Menunggu Konfirmasi Pembayaran</button>'
-          +'<a href="'+p.paymentPdfUrl+'" target="_blank" style="display:block;text-align:center;font-size:12px;color:var(--navy);font-weight:500;margin-top:8px;padding:8px;border:1px solid var(--border);border-radius:8px;text-decoration:none;">📄 Lihat PDF Rekap</a>';
+          +'<p style="font-size:11px;color:var(--gray);text-align:center;margin-top:6px;">Admin akan konfirmasi setelah pembayaran diterima</p>';
       }
 
       // Sesi list (5 pertama tampil, sisanya toggle)
