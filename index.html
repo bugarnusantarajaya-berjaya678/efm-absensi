@@ -1467,7 +1467,11 @@ async function loadHistory(){
         // Semua sesi selesai, belum ajukan — AKTIF
         btnAjukan='<button class="btn-ajukan" onclick="goToSign(\''+p.orderId+'\',\''+encodeURIComponent(p.clientName)+'\')">📋 Ajukan Rekap Absen & Pembayaran</button>';
       }else if(payStatus==='PAID'){
-        btnAjukan='<button class="btn-ajukan done-btn" disabled>✅ Pembayaran Selesai</button>';
+        btnAjukan=
+          '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--green);border-radius:10px;padding:11px 14px;cursor:default;">' +
+          '<span style="color:#fff;font-size:13px;font-weight:600;">✅ Pembayaran Lunas</span>' +
+          '<span style="color:rgba(255,255,255,.85);font-size:11px;font-weight:500;letter-spacing:.3px;">' + (p.paymentNoRekap||'') + '</span>' +
+          '</div>';
         if(p.paymentApprovedUrl){
           btnAjukan+='<a href="'+p.paymentApprovedUrl+'" target="_blank" class="btn-download-rekap">📥 Download Rekap Absen (PDF Final)</a>';
         }
