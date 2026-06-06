@@ -1658,7 +1658,14 @@ async function doSubmitPaymentRequest(){
   btn.disabled=true; btn.textContent='⏳ Memproses & Generate PDF...';
   try{
     const canvas=document.getElementById('sign-canvas');
-    const sig=canvas.toDataURL('image/jpeg', 0.6); // JPEG 60% agar cukup di Sheets (~15-20KB)
+    // Buat temp canvas dengan background putih agar JPEG tidak hitam
+    const tmpC=document.createElement('canvas');
+    tmpC.width=canvas.width; tmpC.height=canvas.height;
+    const tmpCtx=tmpC.getContext('2d');
+    tmpCtx.fillStyle='#FFFFFF';
+    tmpCtx.fillRect(0,0,tmpC.width,tmpC.height);
+    tmpCtx.drawImage(canvas,0,0);
+    const sig=tmpC.toDataURL('image/jpeg',0.6);
     const res=await apiPost({
       action:'submitPaymentRequest',
       token:STATE.token,
