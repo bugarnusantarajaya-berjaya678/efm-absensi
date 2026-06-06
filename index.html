@@ -1658,7 +1658,7 @@ async function doSubmitPaymentRequest(){
   btn.disabled=true; btn.textContent='⏳ Memproses & Generate PDF...';
   try{
     const canvas=document.getElementById('sign-canvas');
-    const sig=canvas.toDataURL('image/png');
+    const sig=canvas.toDataURL('image/jpeg', 0.6); // JPEG 60% agar cukup di Sheets (~15-20KB)
     const res=await apiPost({
       action:'submitPaymentRequest',
       token:STATE.token,
