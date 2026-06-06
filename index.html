@@ -1449,7 +1449,7 @@ async function loadHistory(){
       // Badge pembayaran (kalau ada)
       let payBadge='';
       if(payStatus==='PAID'){
-        payBadge='<div class="pay-badge pay-paid">✅ Pembayaran Lunas ('+p.paymentNoRekap+')</div>';
+        payBadge='<div class="pay-badge pay-paid">✅ Pembayaran Lunas</div>';
       }else if(payStatus==='PENDING'){
         payBadge='<div class="pay-badge pay-pending">⏳ Menunggu Pembayaran ('+p.paymentNoRekap+')</div>';
       }
