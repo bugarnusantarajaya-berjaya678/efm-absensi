@@ -1179,12 +1179,23 @@ async function goToAbsen(orderId){
     document.getElementById('absen-lokasi').textContent=res.lokasi;
     document.getElementById('absen-jadwal').textContent=(res.hari||'')+', '+(res.jam||'');
     document.getElementById('absen-order-card').style.display='block';
-    // Jika tidak ada data lokasi di order → boleh submit (tidak ada yang divalidasi)
+    // Jika tidak ada data lokasi di order → boleh submit, tampilkan info kuning
     if(!STATE.orderLat||!STATE.orderLng){
       STATE.gpsValid=true;
       btn.disabled=false;
       btn.className='btn btn-primary';
       btn.innerHTML='✅ Submit Absensi';
+      // Tampilkan badge info kuning jika GPS sudah terdeteksi
+      if(STATE.gpsLat){
+        const distEl=document.getElementById('gps-distance');
+        distEl.style.display='flex';
+        distEl.style.background='#fffbeb';
+        distEl.style.border='1.5px solid #fcd34d';
+        const distTxt=document.getElementById('gps-distance-text');
+        distTxt.textContent='ℹ️ Validasi jarak tidak aktif — koordinat lokasi belum diset di sistem';
+        distTxt.style.color='#92400e';
+        distTxt.style.fontWeight='500';
+      }
     } else if(STATE.gpsLat){
       // GPS sudah ada → hitung jarak sekarang
       showGPSDistance();
@@ -1206,15 +1217,23 @@ function getGPS(){
     pos=>{
       STATE.gpsLat=pos.coords.latitude;
       STATE.gpsLng=pos.coords.longitude;
-      el.innerHTML='<span>✅</span><p style="font-size:12px;color:var(--green-text);font-weight:600;">GPS terdeteksi — '+STATE.gpsLat.toFixed(5)+', '+STATE.gpsLng.toFixed(5)+'</p>';
+      el.innerHTML='<span>📍</span><p style="font-size:12px;color:var(--green-text);font-weight:600;">GPS aktif — lokasi kamu berhasil terdeteksi</p>';
       el.style.background='var(--green-bg)';el.style.border='1.5px solid #bbf7d0';
       // Hitung jarak jika data order sudah ada
       if(STATE.orderLat){
         showGPSDistance();
       } else if(STATE.currentOrderData){
-        // Order ada tapi tidak punya koordinat → boleh submit
+        // Order ada tapi tidak punya koordinat → boleh submit, tampilkan info kuning
         const btn=document.getElementById('btn-submit');
         btn.disabled=false;btn.className='btn btn-primary';btn.innerHTML='✅ Submit Absensi';
+        const distEl=document.getElementById('gps-distance');
+        distEl.style.display='flex';
+        distEl.style.background='#fffbeb';
+        distEl.style.border='1.5px solid #fcd34d';
+        const distTxt=document.getElementById('gps-distance-text');
+        distTxt.textContent='ℹ️ Validasi jarak tidak aktif — koordinat lokasi belum diset di sistem';
+        distTxt.style.color='#92400e';
+        distTxt.style.fontWeight='500';
       }
     },
     err=>{
