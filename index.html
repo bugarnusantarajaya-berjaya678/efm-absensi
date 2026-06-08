@@ -1154,10 +1154,13 @@ function readQRFromPhoto(event){
 }
 
 async function goToAbsen(orderId){
-  STATE.currentOrderId=orderId;
-  STATE.orderLat=null;
-  STATE.orderLng=null;
-  STATE.gpsValid=null;
+  STATE.currentOrderId   = orderId;
+  STATE.currentOrderData = null;  // reset agar GPS handler tidak trigger yellow badge prematur
+  STATE.orderLat         = null;
+  STATE.orderLng         = null;
+  STATE.gpsValid         = null;
+  STATE.gpsLat           = null;  // reset agar GPS deteksi ulang fresh
+  STATE.gpsLng           = null;
   document.getElementById('absen-kode-pic').value=STATE.kodePIC||'';
   document.getElementById('absen-nama-pic').value=STATE.namaPanggil||'';
   document.getElementById('absen-order-label').textContent='Order ID: '+orderId;
