@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>EFM — Sistem Absensi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --navy:#1E1C43;--orange:#E05945;--bg:#f0f0f6;--white:#fff;
+      --gray:#64748b;--light:#f8fafc;--border:#e2e8f0;
+      --green:#22c55e;--green-bg:#f0fdf4;--green-text:#166534;
+    }
+    html,body{height:100%;font-family:'Poppins',sans-serif;background:var(--bg);color:#1e293b;-webkit-font-smoothing:antialiased;}
+    .page{display:none;min-height:100vh;flex-direction:column;}
+    .page.active{display:flex;}
+    .topbar{background:var(--navy);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .topbar img{height:34px;width:auto;object-fit:contain;}
+    .topbar-back{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:8px;padding:7px 14px;cursor:pointer;color:white;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;line-height:1;}
+    .topbar-title{position:absolute;left:50%;transform:translateX(-50%);color:white;font-size:15px;font-weight:600;white-space:nowrap;pointer-events:none;}
+    .btn-logout{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:8px;padding:7px 14px;cursor:pointer;color:white;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;}
+    .hero{background:var(--navy);padding:20px 20px 48px;color:white;}
+    .hero h1{font-size:22px;font-weight:700;margin-bottom:4px;}
+    .hero p{font-size:13px;color:rgba(255,255,255,0.65);}
+    .card-body{background:var(--white);border-radius:24px 24px 0 0;margin-top:-24px;padding:24px 20px 100px;flex:1;}
+    .field{margin-bottom:16px;}
+    .field label{display:block;font-size:11px;font-weight:700;color:var(--gray);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px;}
+    .field select,.field input{width:100%;padding:13px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--light);font-family:'Poppins',sans-serif;font-size:14px;color:#1e293b;outline:none;transition:border-color .2s;}
+    .field select:focus,.field input:focus{border-color:var(--navy);}
+    .field input[readonly]{background:#f1f5f9;color:var(--gray);}
+    .pin-wrapper{position:relative;}
+    .pin-wrapper input{padding-right:48px !important;}
+    .pin-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:4px;color:#94a3b8;display:flex;align-items:center;transition:color .2s;}
+    .pin-toggle:hover{color:var(--navy);}
+    #page-lock{background:#1E1C43;}
+    .lock-icon-circle{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;}
+    .lock-timer-box{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:20px 16px;margin-bottom:28px;text-align:center;}
+    .lock-timer{color:#E05945;font-size:52px;font-weight:700;letter-spacing:6px;font-variant-numeric:tabular-nums;line-height:1;}
+    .lock-btn{width:100%;padding:14px;border-radius:12px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;}
+    .lock-btn-outline{background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.3);color:white;}
+    .lock-btn-wa{background:#25D366;border:none;color:white;}
+    .lock-btn-primary{background:#E05945;border:none;color:white;font-size:15px;}
+    .lock-status-box{border-radius:14px;padding:16px;margin-bottom:20px;}
+    .lock-pulse{width:8px;height:8px;border-radius:50%;background:#FBBF24;display:inline-block;animation:lockpulse 1.5s infinite;}
+    @keyframes lockpulse{0%,100%{opacity:1}50%{opacity:0.3}}
+    .pin-hint{background:#EEEEF5;border-radius:10px;padding:12px 14px;margin-bottom:16px;border-left:3px solid var(--navy);}
+    .pin-hint p{font-size:12px;color:var(--navy);line-height:1.7;}
+    .pin-hint strong{color:var(--orange);}
+    .btn{width:100%;padding:15px;border:none;border-radius:14px;font-family:'Poppins',sans-serif;font-size:17px;font-weight:600;cursor:pointer;transition:opacity .2s,transform .1s;display:flex;align-items:center;justify-content:center;gap:10px;}
+    .btn:active{transform:scale(.98);}
+    .btn-primary{background:var(--orange);color:white;margin-bottom:10px;}
+    .btn-secondary{background:var(--navy);color:white;margin-bottom:10px;}
+    .btn:disabled{opacity:.5;cursor:not-allowed;}
+    .btn-sm{width:auto;padding:11px 24px;font-size:13px;border-radius:10px;}
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+    .stat-card{background:var(--light);border-radius:14px;padding:16px;border:1px solid var(--border);}
+    .paket-card{background:var(--light);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;}
+    .paket-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+    .paket-client{font-weight:700;font-size:14px;color:var(--navy);}
+    .paket-program{font-size:11px;color:var(--gray);margin-top:2px;}
+    .paket-badge{background:#EEEEF5;color:var(--navy);font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px;white-space:nowrap;}
+    .progress-bar{background:#E0E0EA;border-radius:99px;height:5px;margin:8px 0;overflow:hidden;}
+    .progress-fill{background:var(--navy);border-radius:99px;height:100%;transition:width .5s;}
+    .paket-meta{display:flex;gap:12px;font-size:11px;color:var(--gray);margin-top:6px;}
+    .paket-biaya{font-weight:700;font-size:14px;color:var(--orange);margin-top:6px;}
+    .paket-tgl{font-size:11px;color:var(--gray);margin-top:2px;}
+    .stat-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:10px;}
+    .stat-num{font-size:22px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+    .stat-label{font-size:11px;color:var(--gray);}
+    .action-btn{display:flex;align-items:center;gap:14px;padding:16px;border-radius:16px;margin-bottom:10px;cursor:pointer;border:none;width:100%;text-align:left;font-family:'Poppins',sans-serif;}
+    .action-btn-primary{background:var(--navy);}
+    .action-btn-secondary{background:var(--light);border:1px solid var(--border);}
+    .action-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+    .action-text strong{display:block;font-size:14px;font-weight:600;margin-bottom:2px;}
+    .action-text span{font-size:12px;}
+    .action-arr{margin-left:auto;font-size:20px;}
+    .section-title{font-size:11px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.8px;margin:20px 0 10px;}
+    .activity-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+    .activity-item:last-child{border-bottom:none;}
+    .activity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .activity-text{flex:1;font-size:13px;}
+    .activity-sub{font-size:11px;color:var(--gray);}
+    .activity-time{font-size:11px;color:var(--gray);}
+    #camera-container{position:relative;width:100%;border-radius:16px;overflow:hidden;background:#000;margin-bottom:12px;min-height:200px;max-height:52vh;display:flex;align-items:center;justify-content:center;}
+    #camera-video{width:100%;height:100%;object-fit:cover;display:block;border-radius:16px;}
+    #camera-canvas{display:none;}
+    .scan-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:180px;height:180px;border:3px solid var(--orange);border-radius:16px;box-shadow:0 0 0 9999px rgba(0,0,0,0.4);pointer-events:none;}
+    .scan-line{position:absolute;top:0;left:0;right:0;height:2px;background:var(--orange);animation:scanline 2s linear infinite;}
+    @keyframes scanline{0%{top:0;}100%{top:100%;}}
+    #scan-fallback{text-align:center;padding:20px;}
+    #scan-fallback .fallback-icon{font-size:48px;margin-bottom:12px;}
+    #scan-fallback p{font-size:13px;color:var(--gray);margin-bottom:16px;line-height:1.6;}
+    .step-list{margin-bottom:16px;}
+    .step-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
+    .step-item:last-child{border-bottom:none;}
+    .step-num{width:24px;height:24px;border-radius:50%;background:var(--navy);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+    .step-text{font-size:13px;color:#334155;line-height:1.6;}
+    .step-text strong{color:var(--navy);}
+    .info-box{display:flex;gap:10px;padding:12px 14px;border-radius:12px;margin-bottom:12px;}
+    .info-box-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+    .info-box p{font-size:12px;line-height:1.6;}
+    .info-navy{background:#EEEEF5;} .info-navy p{color:var(--navy);}
+    .info-orange{background:#FDF0EE;} .info-orange p{color:#9a3a28;}
+    .info-green{background:var(--green-bg);} .info-green p{color:var(--green-text);}
+    .order-card{background:#EEEEF5;border-radius:14px;padding:16px;margin-bottom:14px;}
+    .order-card h3{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:10px;}
+    .order-row{display:flex;justify-content:space-between;margin-bottom:5px;}
+    .order-row span{font-size:12px;color:var(--gray);}
+    .order-row strong{font-size:12px;color:var(--navy);text-align:right;max-width:58%;}
+    .photo-upload{border:2px dashed var(--border);border-radius:14px;padding:24px;text-align:center;margin-bottom:14px;cursor:pointer;position:relative;}
+    .photo-upload input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+    .photo-upload .upload-icon{font-size:32px;margin-bottom:8px;}
+    .photo-upload p{font-size:13px;color:var(--gray);}
+    .photo-upload small{font-size:11px;color:#cbd5e1;}
+    #photo-preview{width:100%;border-radius:12px;margin-bottom:14px;display:none;border:2px solid var(--border);}
+    .gps-badge{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;margin-bottom:14px;}
+    /* ── GPS INVALID BANNER ── */
+    .gps-block-banner{display:none;border-radius:16px;padding:20px 18px;margin-bottom:16px;text-align:center;border:2px solid #dc2626;}
+    .gps-block-banner .block-icon{font-size:40px;margin-bottom:10px;}
+    .gps-block-banner .block-title{font-size:18px;font-weight:800;color:#dc2626;margin-bottom:6px;letter-spacing:-0.3px;}
+    .gps-block-banner .block-subtitle{font-size:13px;color:#7f1d1d;line-height:1.6;font-weight:500;}
+    .gps-block-banner .block-distance{font-size:22px;font-weight:800;color:#dc2626;margin:10px 0 4px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;}
+    .gps-block-banner .block-hint{font-size:11px;color:#991b1b;background:rgba(220,38,38,0.08);padding:8px 12px;border-radius:8px;margin-top:10px;font-weight:600;}
+    /* ── TOMBOL BLOCKED STATE ── */
+    .btn-blocked{background:#94a3b8!important;color:#fff!important;cursor:not-allowed!important;opacity:1!important;border:none;}
+    .btn-blocked:active{transform:none!important;}
+    .rekap-card{background:var(--light);border-radius:16px;padding:16px;margin-bottom:14px;border:1px solid var(--border);}
+    .rekap-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+    .rekap-header h3{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:2px;}
+    .rekap-header small{font-size:11px;color:var(--gray);}
+    .rekap-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+    .rekap-stat{text-align:center;}
+    .rekap-stat strong{display:block;font-size:15px;font-weight:700;color:var(--navy);}
+    .rekap-stat span{font-size:10px;color:var(--gray);}
+    .progress-bar{height:5px;background:var(--border);border-radius:5px;overflow:hidden;margin-bottom:12px;}
+    .progress-fill{height:100%;background:var(--orange);border-radius:5px;}
+    .progress-fill.done{background:var(--green);}
+    .sesi-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+    .sesi-item:last-child{border-bottom:none;}
+    .sesi-num{width:24px;height:24px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:600;flex-shrink:0;}
+    .sesi-info{flex:1;}
+    .sesi-info p{font-size:12px;font-weight:500;margin-bottom:1px;}
+    .sesi-info small{font-size:11px;color:var(--gray);}
+    .sesi-foto{font-size:11px;color:var(--navy);text-decoration:none;font-weight:500;}
+    .rekening-box{background:#EEEEF5;border-radius:10px;padding:12px 14px;margin-bottom:16px;}
+    .rekening-box p{font-size:11px;color:var(--navy);font-weight:600;margin-bottom:4px;}
+    .rekening-box small{font-size:12px;color:var(--navy);line-height:1.6;display:block;}
+    .badge{display:inline-block;padding:3px 10px;border-radius:8px;font-size:10px;font-weight:600;}
+    .badge-green{background:var(--green-bg);color:var(--green-text);}
+    .badge-orange{background:#FDF0EE;color:#9a3a28;}
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--border);display:flex;padding:8px 0 env(safe-area-inset-bottom,8px);z-index:200;}
+    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;padding:4px 0;font-family:'Poppins',sans-serif;}
+    .nav-item .nav-icon{font-size:22px;}
+    .nav-item .nav-label{font-size:10px;color:var(--gray);font-weight:500;}
+    .nav-item.active .nav-icon{color:var(--navy);}
+    .nav-item.active .nav-label{color:var(--navy);font-weight:700;}
+    .nav-item:not(.active) .nav-icon{color:#cbd5e1;}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;align-items:center;justify-content:center;padding:20px;}
+    .modal-overlay.show{display:flex;}
+    .modal-box{background:white;border-radius:24px;padding:36px 28px;text-align:center;width:100%;max-width:360px;}
+    .modal-box .modal-icon{font-size:64px;margin-bottom:16px;}
+    .modal-box h2{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px;}
+    .modal-box p{font-size:13px;color:var(--gray);line-height:1.6;margin-bottom:24px;}
+    .msg{padding:12px 14px;border-radius:10px;font-size:13px;margin-top:10px;display:none;}
+    .msg.show{display:block;}
+    .msg-error{background:#fef2f2;color:#991b1b;}
+    .msg-success{background:var(--green-bg);color:var(--green-text);}
+    .msg-info{background:#EEEEF5;color:var(--navy);}
+    .msg-warning{background:#fff7ed;color:#92400e;border-left:3px solid #f97316;}
+    .spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    /* ─── SPLASH SCREEN — NEON MATRIX ─── */
+    #loading-screen{position:fixed;inset:0;background:#1E1C43;display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .6s ease;}
+    #splash-canvas{position:absolute;inset:0;z-index:0;}
+    /* Atmosphere rings — background decoration, bukan mengelilingi logo */
+    .splash-atm{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;pointer-events:none;}
+    .splash-atm-r{position:absolute;border-radius:50%;border:1px solid rgba(224,89,69,.07);transform:translate(-50%,-50%);}
+    .splash-atm-r:nth-child(1){width:320px;height:320px;border-color:rgba(224,89,69,.12);animation:atmSpin 18s linear infinite;}
+    .splash-atm-r:nth-child(2){width:500px;height:500px;animation:atmSpinRev 26s linear infinite;}
+    .splash-atm-r:nth-child(3){width:700px;height:700px;border-color:rgba(255,255,255,.04);animation:atmSpin 38s linear infinite;}
+    @keyframes atmSpin{to{transform:translate(-50%,-50%) rotate(360deg);}}
+    @keyframes atmSpinRev{to{transform:translate(-50%,-50%) rotate(-360deg);}}
+    /* Center content */
+    .splash-center{position:relative;z-index:2;text-align:center;display:flex;flex-direction:column;align-items:center;}
+    /* Logo bulat — ring orbit sempurna */
+    .splash-logo-wrap{position:relative;width:120px;height:120px;margin:0 auto 28px;display:flex;align-items:center;justify-content:center;animation:splashPop .7s .3s cubic-bezier(.34,1.56,.64,1) both;}
+    .splash-ring1{position:absolute;inset:-12px;border-radius:50%;border:1.5px solid rgba(224,89,69,.35);animation:splashSpin 8s linear infinite;}
+    .splash-ring2{position:absolute;inset:-24px;border-radius:50%;border:1px dashed rgba(224,89,69,.18);animation:splashSpinRev 14s linear infinite;}
+    .splash-ring3{position:absolute;inset:-38px;border-radius:50%;border:1px solid rgba(255,255,255,.06);animation:splashSpin 22s linear infinite;}
+    .splash-logo-img{width:120px;height:120px;object-fit:contain;display:block;position:relative;z-index:1;filter:drop-shadow(0 0 16px rgba(224,89,69,.5)) drop-shadow(0 0 40px rgba(224,89,69,.2));}
+    @keyframes splashSpin{to{transform:rotate(360deg);}}
+    @keyframes splashSpinRev{to{transform:rotate(-360deg);}}
+    /* Text */
+    .splash-brand{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:8px;line-height:1;
+      color:#fff;
+      text-shadow:0 0 30px rgba(224,89,69,.4),0 0 60px rgba(224,89,69,.15);
+      animation:splashSlide .7s .65s ease both;}
+    .splash-mgmt{font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;letter-spacing:5px;color:rgba(255,255,255,.65);margin-top:5px;animation:splashSlide .7s .75s ease both;}
+    /* Divider bar */
+    .splash-bar{display:flex;align-items:center;gap:12px;margin:20px 0 10px;animation:splashSlide .6s .9s ease both;}
+    .splash-line{height:1px;width:44px;background:linear-gradient(90deg,transparent,rgba(224,89,69,.6));}
+    .splash-line.r{background:linear-gradient(90deg,rgba(224,89,69,.6),transparent);}
+    .splash-tag{font-family:'Poppins',sans-serif;font-size:12px;letter-spacing:1.5px;color:#E05945;font-weight:600;}
+    /* Progress */
+    .splash-status{margin-top:28px;animation:splashSlide .6s 1.05s ease both;}
+    .splash-status-txt{font-family:'Poppins',sans-serif;font-size:11px;letter-spacing:2.5px;color:rgba(255,255,255,.5);font-weight:600;}
+    .splash-prog{width:160px;height:2px;background:rgba(255,255,255,.1);border-radius:99px;margin:10px auto 0;overflow:hidden;}
+    .splash-prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#2d2b6e,#E05945);animation:splashLoad 2s 1.2s ease both;}
+    /* Keyframes */
+    @keyframes splashPop{from{opacity:0;transform:scale(.85) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}
+    @keyframes splashSlide{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes splashLoad{from{width:0;}to{width:100%;}}
+
+    /* Desktop hero — hidden di semua device (termasuk mobile!) */
+    #desktop-hero{display:none;}
+
+    /* ═══════════════════════════════════════
+       RESPONSIVE — TABLET & DESKTOP
+    ═══════════════════════════════════════ */
+    @media (min-width: 768px) {
+      html,body{
+        background-color:#1E1C43;
+        background-image:
+          radial-gradient(ellipse 80% 60% at 50% 40%, rgba(224,89,69,.07) 0%, transparent 70%);
+        display:flex;align-items:flex-start;justify-content:center;
+        min-height:100vh;
+        padding:40px 20px;
+      }
+      #desktop-layout{display:flex;justify-content:center;width:100%;}
+      #app{
+        width:680px;
+        max-width:calc(100% - 40px);
+        border-radius:24px;
+        overflow:hidden;
+        box-shadow:
+          0 2px 0 rgba(255,255,255,.06),
+          0 20px 60px rgba(0,0,0,.5),
+          0 0 0 1px rgba(255,255,255,.05);
+        min-height:calc(100vh - 80px);
+        display:flex;
+        flex-direction:column;
+      }
+      .page{min-height:calc(100vh - 80px);}
+      /* Stat cards tidak collapse saat loading (—) */
+      .stat-card{min-height:110px;}
+      /* Tablet: padding lebih besar untuk semua halaman (kecuali login sudah custom) */
+      .hero{padding:40px 36px 56px;}
+      .hero h1{font-size:26px;}
+      .hero p{font-size:14px;}
+      .card-body{padding:36px 36px 80px;}
+      /* Login khusus (override hero/card-body umum) */
+      #page-login .hero{padding:52px 44px 68px;}
+      #page-login .hero h1{font-size:26px;line-height:1.2;white-space:nowrap;}
+      #page-login .hero h1 br{display:none;}
+      #page-login .hero p{font-size:15px;margin-top:6px;}
+      #page-login .card-body{padding:40px 44px 48px;}
+      #page-login.active{display:flex;flex-direction:column;}
+      #page-login.active .card-body{flex:1;}
+    }
+
+    @media (min-width: 1024px) {
+      #app{width:720px;}
+      /* Desktop: padding lebih besar lagi */
+      .hero{padding:48px 44px 64px;}
+      .hero h1{font-size:28px;}
+      .card-body{padding:40px 44px 100px;}
+    }
+
+    /* ── PAYMENT STATUS ──────────────────────── */
+    .pay-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;margin-top:6px;}
+    .pay-pending{background:rgba(230,81,0,.1);color:#e65100;border:1px solid rgba(230,81,0,.25);}
+    .pay-paid{background:var(--green-bg);color:var(--green-text);border:1px solid rgba(34,197,94,.3);}
+    .btn-ajukan{width:100%;margin-top:12px;padding:11px 16px;background:var(--navy);color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:.2px;transition:opacity .2s;}
+    .btn-ajukan:active{opacity:.85;}
+    .btn-ajukan.done-btn{background:var(--green);color:#fff;}
+    .btn-download-rekap{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-top:8px;padding:11px 16px;background:transparent;border:1.5px solid var(--navy);border-radius:10px;font-size:13px;font-weight:600;color:var(--navy);text-decoration:none;cursor:pointer;box-sizing:border-box;}
+
+    /* ── PAGE SIGN ───────────────────────────── */
+    #page-sign .hero{padding:16px 20px 40px;}
+    #page-sign .hero h1{font-size:17px;}
+    .rekap-preview-box{background:var(--light);border-radius:14px;padding:14px 16px;margin-bottom:14px;border:1px solid var(--border);}
+    .rekap-field{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--border);}
+    .rekap-field:last-child{border-bottom:none;}
+    .rekap-fl{font-size:12px;color:var(--gray);}
+    .rekap-fv{font-size:12px;font-weight:600;text-align:right;max-width:58%;word-break:break-word;}
+    .rekap-fv.total{font-size:14px;color:var(--navy);}
+    .sign-canvas-wrap{background:#fff;border:2px dashed var(--border);border-radius:12px;overflow:hidden;margin:10px 0 8px;cursor:crosshair;position:relative;}
+    .sign-canvas-wrap canvas{display:block;width:100%;height:220px;touch-action:none;}
+    .sign-placeholder{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;color:#cbd5e1;pointer-events:none;text-align:center;line-height:1.6;}
+    .btn-clear-sign{width:100%;padding:9px;background:transparent;border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--gray);cursor:pointer;margin-bottom:10px;}
+    .btn-submit-pay{width:100%;padding:15px;background:var(--navy);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;transition:opacity .2s;}
+    .btn-submit-pay:active{opacity:.85;}
+    .btn-submit-pay:disabled{background:#94a3b8;cursor:default;}
+  </style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <canvas id="splash-canvas"></canvas>
+  <div class="splash-center">
+    <div class="splash-logo-wrap">
+      <div class="splash-ring1"></div>
+      <div class="splash-ring2"></div>
+      <div class="splash-ring3"></div>
+      <img class="splash-logo-img" src="white-logo-circle-pure.png" alt="EFM">
+    </div>
+    <div class="splash-brand">ESSENTIAL</div>
+    <div class="splash-mgmt">FITNESS MANAGEMENT</div>
+    <div class="splash-bar">
+      <div class="splash-line"></div>
+      <div class="splash-tag">Get Fit In 1 Solution</div>
+      <div class="splash-line r"></div>
+    </div>
+    <div class="splash-status">
+      <div class="splash-status-txt">MEMUAT SISTEM</div>
+      <div class="splash-prog"><div class="splash-prog-fill"></div></div>
+    </div>
+  </div>
+</div>
+
+
+<div id="desktop-layout">
+
+<!-- DESKTOP HERO PANEL (hanya tampil di desktop 1024px+) -->
+<div id="desktop-hero">
+  <img class="dh-logo" src="logo-circle-white.png" alt="EFM">
+  <div class="dh-main">
+    <div class="dh-title">ESSENTIAL</div>
+    <div class="dh-sub">FITNESS MANAGEMENT</div>
+    <p class="dh-desc">Sistem absensi digital untuk pelatih & terapis EFM. Scan QR klien, catat kehadiran, dan pantau sesi secara real-time.</p>
+    <div class="dh-badges">
+      <div class="dh-badge">
+        <div class="dh-badge-icon">📱</div>
+        <div class="dh-badge-text"><strong>Scan QR Barcode</strong><span>Absensi otomatis dari barcode klien</span></div>
+      </div>
+      <div class="dh-badge">
+        <div class="dh-badge-icon">📦</div>
+        <div class="dh-badge-text"><strong>Pantau Paket Aktif</strong><span>Progress sesi & potensi bayaran</span></div>
+      </div>
+      <div class="dh-badge">
+        <div class="dh-badge-icon">📋</div>
+        <div class="dh-badge-text"><strong>Riwayat Absensi</strong><span>Rekap sesi lengkap per klien</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="dh-footer">© 2026 Essential Fitness Management · #GetFitIn1Solution</div>
+</div>
+
+<!-- APP SHELL -->
+<div id="app">
+
+<!-- LOGIN -->
+<div class="page" id="page-login">
+  <div class="hero" style="padding-top:44px;">
+    <div style="margin-bottom:24px;"><img src="logo-circle-white.png" alt="EFM" style="height:56px;width:auto;object-fit:contain;"></div>
+    <h1>Selamat datang, Pelatih & Terapis EFM 👋</h1>
+    <p style="margin-top:6px;">Masuk untuk mulai absensi sesi latihan/terapi</p>
+  </div>
+  <div class="card-body" style="padding-bottom:40px;">
+    <div class="field">
+      <label>Kode PIC</label>
+      <input type="text" id="login-kode-pic" placeholder="Contoh: BGS" autocomplete="off" maxlength="10"
+        oninput="this.value=this.value.toUpperCase()"
+        style="text-transform:uppercase;font-weight:700;letter-spacing:2px;font-size:18px;">
+      <small style="color:var(--gray);font-size:11px;margin-top:4px;display:block;">Tulis kapital semua · Contoh: BGS, ROB, ANM</small>
+    </div>
+    <div class="field">
+      <label>PIN (6 digit)</label>
+      <div class="pin-wrapper">
+        <input type="password" id="login-pin" placeholder="••••••" maxlength="6" inputmode="numeric" autocomplete="off">
+        <button type="button" class="pin-toggle" id="toggle-login-pin" onclick="togglePIN('login-pin','toggle-login-pin')" title="Tampilkan/sembunyikan PIN">
+          <svg id="eye-login-pin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="btn-login" onclick="doLogin()"><span style="font-size:20px;">🔐</span> Masuk</button>
+    <div class="msg" id="login-msg"></div>
+
+    <div style="text-align:center;margin-top:20px;">
+      <span style="font-size:13px;color:var(--gray);">Belum punya akun?</span>
+      <button onclick="showPage('signup')" style="background:none;border:none;color:var(--navy);font-weight:700;font-size:13px;cursor:pointer;text-decoration:underline;padding:0 4px;">Daftar di sini</button>
+    </div>
+    <a href="https://wa.me/6281119920666?text=Halo%20Admin%20EFM%2C%20saya%20lupa%20PIN%20login%20absensi." target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#25D366;color:#fff;font-weight:600;font-size:13px;padding:10px 16px;border-radius:12px;text-decoration:none;margin-top:12px;box-shadow:0 2px 6px rgba(37,211,102,0.3);">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <span>Lupa PIN? Chat WhatsApp admin EFM</span>
+    </a>
+  </div>
+</div>
+
+<!-- SIGN UP -->
+<div class="page" id="page-signup">
+  <div class="hero" style="padding-top:44px;">
+    <div style="margin-bottom:24px;"><img src="logo-circle-white.png" alt="EFM" style="height:56px;width:auto;object-fit:contain;"></div>
+    <h1>Daftar Akun EFM 🏋️</h1>
+    <p style="margin-top:6px;">Masukkan Kode PIC dan buat PIN pribadimu</p>
+  </div>
+  <div class="card-body" style="padding-bottom:40px;">
+    <div class="field">
+      <label>Kode PIC</label>
+      <input type="text" id="signup-kode-pic" placeholder="Contoh: BGS" autocomplete="off" maxlength="10"
+        oninput="this.value=this.value.toUpperCase()"
+        style="text-transform:uppercase;font-weight:700;letter-spacing:2px;font-size:18px;">
+      <small style="color:var(--gray);font-size:11px;margin-top:4px;display:block;">💡 Kode PIC didapat dari admin EFM via WhatsApp</small>
+    </div>
+    <div class="field">
+      <label>Buat PIN (6 digit angka)</label>
+      <div class="pin-wrapper">
+        <input type="password" id="signup-pin" placeholder="••••••" maxlength="6" inputmode="numeric" autocomplete="new-password">
+        <button type="button" class="pin-toggle" id="toggle-signup-pin" onclick="togglePIN('signup-pin','toggle-signup-pin')" title="Tampilkan/sembunyikan PIN">
+          <svg id="eye-signup-pin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <small style="color:var(--gray);font-size:11px;margin-top:4px;display:block;">Hanya angka, 6 digit. Contoh: 123456</small>
+    </div>
+    <div class="field">
+      <label>Konfirmasi PIN</label>
+      <div class="pin-wrapper">
+        <input type="password" id="signup-confirm-pin" placeholder="••••••" maxlength="6" inputmode="numeric" autocomplete="new-password">
+        <button type="button" class="pin-toggle" id="toggle-signup-confirm" onclick="togglePIN('signup-confirm-pin','toggle-signup-confirm')" title="Tampilkan/sembunyikan PIN">
+          <svg id="eye-signup-confirm" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="pin-hint" style="margin-bottom:16px;">
+      <p>🔒 PIN ini <strong>hanya kamu yang tahu</strong>. Admin tidak bisa melihat PIN kamu setelah didaftarkan.<br>Jika lupa PIN, hubungi admin untuk reset akun.</p>
+    </div>
+    <button class="btn btn-primary" id="btn-signup" onclick="doSignUp()"><span style="font-size:20px;">✅</span> Daftar Sekarang</button>
+    <div class="msg" id="signup-msg"></div>
+    <div style="text-align:center;margin-top:20px;">
+      <span style="font-size:13px;color:var(--gray);">Sudah punya akun?</span>
+      <button onclick="showPage('login')" style="background:none;border:none;color:var(--navy);font-weight:700;font-size:13px;cursor:pointer;text-decoration:underline;padding:0 4px;">Masuk di sini</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- LOCK PAGE -->
+<div class="page" id="page-lock">
+  <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px 24px;min-height:100vh;box-sizing:border-box;">
+    <p style="color:rgba(255,255,255,0.3);font-size:10px;letter-spacing:2px;margin:0 0 36px;text-transform:uppercase;display:none;"></p>
+
+    <!-- STATE: TERKUNCI + TIMER -->
+    <div id="lock-state-locked" style="width:100%;text-align:center;">
+      <img src="logo-circle-white.png" alt="EFM" style="width:112px;height:112px;object-fit:contain;margin:0 auto 24px;display:block;">
+      <p style="color:rgba(255,255,255,0.5);font-size:11px;letter-spacing:1px;margin:0 0 6px;text-transform:uppercase;">Akun terkunci sementara</p>
+      <p style="color:white;font-size:16px;font-weight:600;margin:0 0 28px;line-height:1.5;">Terlalu banyak percobaan<br>salah PIN</p>
+      <div class="lock-timer-box" id="lock-timer-box">
+        <p style="color:rgba(255,255,255,0.45);font-size:11px;margin:0 0 8px;letter-spacing:0.5px;">Coba lagi dalam</p>
+        <div class="lock-timer" id="lock-timer-display">05:00</div>
+        <p style="color:rgba(255,255,255,0.3);font-size:11px;margin:10px 0 0;">menit : detik</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <button class="lock-btn lock-btn-outline" id="lock-btn-request" onclick="doRequestReset()" style="display:none;">
+          <i class="ti ti-lock-open" style="font-size:18px;" aria-hidden="true"></i>
+          Ajukan Unlock ke Admin
+        </button>
+        <button class="lock-btn lock-btn-wa" onclick="window.open('https://wa.me/6281119920666?text=Halo%20Admin%20EFM%2C%20saya%20lupa%20PIN%20login%20absensi.','_blank')">
+          <i class="ti ti-brand-whatsapp" style="font-size:18px;" aria-hidden="true"></i>
+          Lupa PIN? Chat WA Admin EFM
+        </button>
+      </div>
+      <p style="color:rgba(255,255,255,0.2);font-size:11px;margin:24px 0 0;">Akun terbuka otomatis setelah timer habis</p>
+    </div>
+
+    <!-- STATE: MENUNGGU KONFIRMASI ADMIN -->
+    <div id="lock-state-waiting" style="display:none;width:100%;text-align:center;">
+      <img src="logo-circle-white.png" alt="EFM" style="width:112px;height:112px;object-fit:contain;margin:0 auto 24px;display:block;">
+      <p style="color:rgba(255,255,255,0.45);font-size:11px;letter-spacing:1px;margin:0 0 6px;text-transform:uppercase;">Menunggu konfirmasi</p>
+      <p style="color:white;font-size:16px;font-weight:600;margin:0 0 24px;line-height:1.5;">Request sudah dikirim<br>ke admin EFM</p>
+      <div class="lock-status-box" style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);margin-bottom:20px;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;">
+          <div class="lock-pulse"></div>
+          <span style="color:#FBBF24;font-size:12px;font-weight:600;">Email terkirim ke admin</span>
+        </div>
+        <p style="color:rgba(255,255,255,0.4);font-size:11px;margin:0;line-height:1.5;">Admin akan menerima notifikasi<br>dan meng-approve unlock akun kamu</p>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span style="color:rgba(255,255,255,0.35);font-size:11px;">Status</span>
+          <span style="background:rgba(251,191,36,0.15);color:#FBBF24;font-size:10px;padding:2px 8px;border-radius:6px;">Menunggu</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span style="color:rgba(255,255,255,0.35);font-size:11px;">Kode PIC</span>
+          <span style="color:rgba(255,255,255,0.6);font-size:11px;font-weight:600;" id="lock-waiting-kode">—</span>
+        </div>
+      </div>
+      <button class="lock-btn lock-btn-wa" onclick="window.open('https://wa.me/6281119920666?text=Halo%20Admin%20EFM%2C%20saya%20lupa%20PIN%20login%20absensi.','_blank')">
+        <i class="ti ti-brand-whatsapp" style="font-size:18px;" aria-hidden="true"></i>
+        Lupa PIN? Chat WA Admin EFM
+      </button>
+      <p style="color:rgba(255,255,255,0.18);font-size:10px;margin:16px 0 0;line-height:1.5;">Halaman ini otomatis update<br>saat admin sudah approve</p>
+    </div>
+
+    <!-- STATE: BERHASIL DI-UNLOCK -->
+    <div id="lock-state-approved" style="display:none;width:100%;text-align:center;">
+      <img src="logo-circle-white.png" alt="EFM" style="width:112px;height:112px;object-fit:contain;margin:0 auto 24px;display:block;">
+      <p style="color:rgba(255,255,255,0.45);font-size:11px;letter-spacing:1px;margin:0 0 6px;text-transform:uppercase;">Akun berhasil di-unlock</p>
+      <p style="color:white;font-size:16px;font-weight:600;margin:0 0 24px;line-height:1.5;">Admin sudah konfirmasi.<br>Kamu bisa login kembali!</p>
+      <div class="lock-status-box" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);margin-bottom:24px;">
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;">
+          <i class="ti ti-circle-check" style="font-size:16px;color:#22C55E;" aria-hidden="true"></i>
+          <span style="color:#22C55E;font-size:12px;font-weight:600;">Unlock berhasil</span>
+        </div>
+        <p style="color:rgba(255,255,255,0.4);font-size:11px;margin:0;line-height:1.5;">Masukkan PIN kamu yang sudah ada.<br>Jika lupa PIN hubungi admin EFM.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <button class="lock-btn lock-btn-primary" onclick="showPage('login')">
+          <i class="ti ti-login" style="font-size:18px;" aria-hidden="true"></i>
+          Login Sekarang
+        </button>
+        <button class="lock-btn lock-btn-wa" onclick="window.open('https://wa.me/6281119920666?text=Halo%20Admin%20EFM%2C%20saya%20lupa%20PIN%20login%20absensi.','_blank')">
+          <i class="ti ti-brand-whatsapp" style="font-size:18px;" aria-hidden="true"></i>
+          Lupa PIN? Chat WA Admin EFM
+        </button>
+      </div>
+    </div>
+
+    <!-- STATE: DITOLAK ADMIN -->
+    <div id="lock-state-rejected" style="display:none;width:100%;text-align:center;">
+      <img src="logo-circle-white.png" alt="EFM" style="width:112px;height:112px;object-fit:contain;margin:0 auto 24px;display:block;">
+      <p style="color:rgba(255,255,255,0.45);font-size:11px;letter-spacing:1px;margin:0 0 6px;text-transform:uppercase;">Request ditolak</p>
+      <p style="color:white;font-size:16px;font-weight:600;margin:0 0 24px;line-height:1.5;">Admin menolak request unlock.<br>Hubungi admin via WhatsApp.</p>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <button class="lock-btn lock-btn-wa" onclick="window.open('https://wa.me/6281119920666?text=Halo%20Admin%20EFM%2C%20request%20unlock%20saya%20ditolak.','_blank')">
+          <i class="ti ti-brand-whatsapp" style="font-size:18px;" aria-hidden="true"></i>
+          Chat WA Admin EFM
+        </button>
+        <button class="lock-btn lock-btn-outline" onclick="showPage('login')">
+          <i class="ti ti-arrow-left" style="font-size:18px;" aria-hidden="true"></i>
+          Kembali ke Login
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page" id="page-dashboard">
+  <div class="topbar"><img src="logo-circle-white.png" alt="EFM"><button class="btn-logout" onclick="doLogout()">Keluar ›</button></div>
+  <div class="hero"><h1 id="dash-greeting">Halo, Pelatih! 👋</h1><p id="dash-date"></p></div>
+  <div class="card-body">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon" style="background:#EEEEF5;">📦</div><div class="stat-num" id="dash-total-paket">—</div><div class="stat-label">Paket aktif</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:#FDF0EE;">💰</div><div class="stat-num" id="dash-total-potensi">—</div><div class="stat-label">Potensi bayaran</div></div>
+    </div>
+    <div class="section-title">Aksi cepat</div>
+    <button class="action-btn action-btn-primary" onclick="showPage('scan')">
+      <div class="action-icon" style="background:var(--orange);">📷</div>
+      <div class="action-text"><strong style="color:white;">Scan QR Klien</strong><span style="color:rgba(255,255,255,.6);">Mulai absensi sesi latihan/terapi</span></div>
+      <div class="action-arr" style="color:rgba(255,255,255,.4);">›</div>
+    </button>
+    <button class="action-btn action-btn-secondary" onclick="showPage('history')">
+      <div class="action-icon" style="background:#EEEEF5;">📋</div>
+      <div class="action-text"><strong style="color:var(--navy);">Riwayat Absensi</strong><span style="color:var(--gray);">Lihat sesi dan rekap bayaran</span></div>
+      <div class="action-arr" style="color:var(--gray);">›</div>
+    </button>
+    <div class="section-title">Paket aktif</div>
+    <div id="dash-paket-aktif"><div style="text-align:center;padding:20px;color:var(--gray);font-size:13px;">Memuat data...</div></div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="showPage('dashboard')"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></button>
+    <button class="nav-item" onclick="showPage('scan')"><div class="nav-icon">📷</div><div class="nav-label">Scan</div></button>
+    <button class="nav-item" onclick="showPage('history')"><div class="nav-icon">📋</div><div class="nav-label">History</div></button>
+  </div>
+</div>
+
+<!-- SCAN -->
+<div class="page" id="page-scan">
+  <div class="topbar"><button class="topbar-back" onclick="stopCamera();showPage('dashboard')"><span style="font-size:18px;line-height:1;">‹</span> Kembali</button><div class="topbar-title">Scan QR Klien</div><div style="width:36px;"></div></div>
+  <div style="background:var(--navy);padding:12px 20px 32px;text-align:center;"><p style="color:rgba(255,255,255,.7);font-size:13px;font-weight:500;letter-spacing:0.1px;">Arahkan kamera ke QR barcode klien</p></div>
+  <div class="card-body">
+    <div id="camera-container"><video id="camera-video" autoplay playsinline muted></video><canvas id="camera-canvas"></canvas><div class="scan-overlay"><div class="scan-line"></div></div></div>
+    <div class="msg" id="scan-msg"></div>
+    <div id="scan-fallback" style="display:none;">
+      <div class="fallback-icon">📷</div>
+      <p>Kamera live tidak tersedia.<br>Gunakan tombol di bawah untuk foto QR klien.</p>
+      <div style="position:relative;display:inline-block;">
+        <button class="btn btn-primary btn-sm" style="margin:0 auto;">📷 Foto QR Barcode</button>
+        <input type="file" id="qr-file-input" accept="image/*" capture="environment" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;" onchange="readQRFromPhoto(event)">
+      </div>
+    </div>
+    <div class="section-title" style="margin-top:16px;">Cara scan QR klien</div>
+    <div class="step-list">
+      <div class="step-item"><div class="step-num">1</div><div class="step-text">Minta klien buka QR barcode di HP mereka (dikirim admin EFM via WhatsApp)</div></div>
+      <div class="step-item"><div class="step-num">2</div><div class="step-text">Arahkan kamera ke QR — sistem otomatis membaca dan membuka form absensi</div></div>
+      <div class="step-item"><div class="step-num">3</div><div class="step-text">Pastikan QR terlihat jelas di dalam kotak oranye — tidak blur dan cukup cahaya</div></div>
+      <div class="step-item"><div class="step-num">4</div><div class="step-text">Upload foto kehadiran dan tap <strong>"Submit Absensi"</strong></div></div>
+    </div>
+    <div class="info-box info-navy"><div class="info-box-icon">🔒</div><p>QR klien hanya berisi <strong>Order ID</strong> — PIN dan data pribadi kamu tidak pernah tersimpan di QR.</p></div>
+    <div class="info-box info-orange"><div class="info-box-icon">📍</div><p>Pastikan kamu sudah berada di <strong>lokasi klien</strong> sebelum scan. GPS akan dicatat otomatis.</p></div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="stopCamera();showPage('dashboard')"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></button>
+    <button class="nav-item active"><div class="nav-icon">📷</div><div class="nav-label">Scan</div></button>
+    <button class="nav-item" onclick="stopCamera();showPage('history')"><div class="nav-icon">📋</div><div class="nav-label">History</div></button>
+  </div>
+</div>
+
+<!-- FORM ABSENSI -->
+<div class="page" id="page-absen">
+  <div class="topbar"><button class="topbar-back" onclick="showPage('scan')"><span style="font-size:18px;line-height:1;">‹</span> Kembali</button><div class="topbar-title">Form Absensi</div><div style="width:36px;"></div></div>
+  <div style="background:var(--navy);padding:12px 20px 32px;text-align:center;"><p style="color:rgba(255,255,255,.7);font-size:13px;font-weight:500;letter-spacing:0.1px;" id="absen-order-label">Order ID: —</p></div>
+  <div class="card-body">
+
+    <!-- 1. Kode PIC -->
+    <div class="field"><label>Kode PIC</label><input type="text" id="absen-kode-pic" readonly></div>
+
+    <!-- 2. Nama PIC -->
+    <div class="field"><label>Nama PIC</label><input type="text" id="absen-nama-pic" readonly></div>
+
+    <!-- 3. Data Klien -->
+    <div class="section-title">Data Klien</div>
+    <div id="absen-order-loading" class="info-box info-navy"><div class="info-box-icon">⏳</div><p>Memvalidasi Order ID...</p></div>
+    <div id="absen-order-card" style="display:none;">
+      <div class="order-card">
+        <h3>✅ <span id="absen-client-name">—</span></h3>
+        <div class="order-row"><span>Program</span><strong id="absen-program">—</strong></div>
+        <div class="order-row"><span>Lokasi</span><strong id="absen-lokasi">—</strong></div>
+        <div class="order-row"><span>Jadwal</span><strong id="absen-jadwal">—</strong></div>
+      </div>
+    </div>
+
+    <!-- 4. GPS & Lokasi -->
+    <div class="section-title">GPS & Lokasi kamu sekarang</div>
+    <div id="gps-status" class="gps-badge" style="background:#f1f5f9;"><span>📍</span><p style="font-size:12px;color:var(--gray);">Mendeteksi lokasi GPS...</p></div>
+    <div id="gps-distance" class="gps-badge" style="display:none;background:#f1f5f9;margin-top:-8px;"><span>📏</span><p id="gps-distance-text" style="font-size:12px;color:var(--gray);">Menghitung jarak ke lokasi...</p></div>
+    <!-- GPS INVALID BANNER — muncul langsung setelah badge GPS -->
+    <div id="gps-block-banner" class="gps-block-banner" style="background:#fff5f5;">
+      <div class="block-icon">🚫</div>
+      <div class="block-title">KAMU TIDAK DI LOKASI KLIEN!</div>
+      <div class="block-distance" id="block-distance-text">— km</div>
+      <div class="block-subtitle">Jarak kamu terlalu jauh dari lokasi klien.<br>Absensi hanya bisa dilakukan<br><strong>dalam radius 300 meter.</strong></div>
+      <div class="block-hint">📍 Pergi ke lokasi klien terlebih dahulu, lalu refresh halaman ini</div>
+    </div>
+
+    <!-- 5. Foto Kehadiran -->
+    <div id="foto-section">
+      <div class="section-title">Foto Kehadiran</div>
+      <img id="photo-preview" src="" alt="preview foto">
+      <div class="photo-upload" id="photo-upload-area">
+        <input type="file" id="photo-input" accept="image/*" capture="environment" onchange="handlePhoto(event)">
+        <div class="upload-icon">📷</div>
+        <p>Tap untuk ambil foto kehadiran</p>
+        <small>Foto wajib diupload</small>
+      </div>
+    </div>
+
+    <!-- 6. Submit -->
+    <button class="btn btn-primary" id="btn-submit" onclick="submitAbsensi()">✅ Submit Absensi</button>
+    <div class="msg" id="absen-msg"></div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="page" id="page-history">
+  <div class="topbar"><button class="topbar-back" onclick="showPage('dashboard')"><span style="font-size:18px;line-height:1;">‹</span> Kembali</button><div class="topbar-title">Riwayat Absensi</div><div style="width:80px;"></div></div>
+  <div class="hero"><h1 id="hist-nama">—</h1><p id="hist-kode">—</p></div>
+  <div class="card-body">
+    <div id="hist-loading" class="info-box info-navy"><div class="info-box-icon">⏳</div><p>Memuat riwayat absensi...</p></div>
+    <div id="hist-content" style="display:none;"></div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item" onclick="showPage('dashboard')"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></button>
+    <button class="nav-item" onclick="showPage('scan')"><div class="nav-icon">📷</div><div class="nav-label">Scan</div></button>
+    <button class="nav-item active"><div class="nav-icon">📋</div><div class="nav-label">History</div></button>
+  </div>
+</div>
+
+<!-- PAGE SIGN — TTD Digital & Ajukan Pembayaran -->
+<div class="page" id="page-sign">
+  <div class="topbar"><button class="topbar-back" onclick="showPage('history')"><span style="font-size:18px;line-height:1;">‹</span> Kembali</button><div class="topbar-title" style="line-height:1.4;">Ajukan Rekap<br>& Pembayaran</div><div style="width:80px;"></div></div>
+  <div class="hero"><h1 id="sign-client-name">—</h1><p id="sign-order-id" style="opacity:.8;font-size:13px;">—</p></div>
+  <div class="card-body">
+    <div id="sign-loading" class="info-box info-navy"><div class="info-box-icon">⏳</div><p>Memuat data rekap...</p></div>
+    <div id="sign-content" style="display:none;">
+
+      <!-- Preview data rekap -->
+      <p style="font-size:12px;font-weight:700;color:var(--gray);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Detail Rekap</p>
+      <div class="rekap-preview-box" id="sign-preview-fields"></div>
+
+      <!-- Sesi list -->
+      <p style="font-size:12px;font-weight:700;color:var(--gray);margin:14px 0 8px;text-transform:uppercase;letter-spacing:.5px;">Riwayat Sesi</p>
+      <div class="rekap-card" style="margin-bottom:16px;">
+        <div id="sign-sesi-list"></div>
+      </div>
+
+      <!-- Signature Canvas -->
+      <p style="font-size:12px;font-weight:700;color:var(--gray);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">Tanda Tangan Digital</p>
+      <p style="font-size:11px;color:var(--gray);margin-bottom:0;">Tanda tangan menggunakan jari atau stylus di kotak di bawah ini</p>
+      <div class="sign-canvas-wrap">
+        <canvas id="sign-canvas" width="700" height="280"></canvas>
+        <div class="sign-placeholder" id="sign-placeholder">✍ Tanda tangan di sini</div>
+      </div>
+      <button class="btn-clear-sign" onclick="clearSignature()">🗑 Bersihkan Tanda Tangan</button>
+
+      <!-- Catatan -->
+      <div style="background:#EEEEF5;border-radius:10px;padding:12px 14px;margin-bottom:16px;border-left:3px solid var(--navy);">
+        <p style="font-size:12px;color:var(--navy);line-height:1.7;margin:0;">
+          Dengan mengirim pengajuan ini, Anda menyatakan bahwa data absensi di atas adalah benar.<br>
+          PDF rekap yang ditandatangani akan dikirim otomatis ke admin EFM untuk diproses.
+        </p>
+      </div>
+
+      <!-- Submit button -->
+      <button class="btn-submit-pay" id="btn-submit-pay" onclick="doSubmitPaymentRequest()">
+        📨 Kirim Pengajuan ke Admin
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- REKAP PREVIEW MODAL (view only, tampil setelah submit pengajuan) -->
+<div id="rekap-preview-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1001;flex-direction:column;overflow:hidden;">
+  <div style="background:#1E1C43;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+    <span style="color:#fff;font-size:14px;font-weight:500;">Preview Rekap Absen</span>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="background:rgba(255,200,0,.2);color:#ffd700;font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid rgba(255,200,0,.4);">View Only</span>
+      <button onclick="closeRekapPreview()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+  </div>
+  <div id="rekap-preview-scroll" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#f0f0f0;padding:12px;">
+    <div id="rekap-preview-content" style="background:#fff;border-radius:8px;padding:16px;font-family:Arial,sans-serif;font-size:11px;max-width:600px;margin:0 auto;"></div>
+  </div>
+  <div style="background:#1E1C43;padding:10px 16px;text-align:center;flex-shrink:0;">
+    <p style="color:rgba(255,255,255,.65);font-size:12px;margin:0 0 8px;">PDF final dengan verifikasi admin tersedia setelah pembayaran dikonfirmasi</p>
+    <button onclick="closeRekapPreview()" style="background:#fff;color:#1E1C43;border:none;padding:10px 28px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;">Kembali ke History</button>
+  </div>
+</div>
+
+<!-- PHOTO LIGHTBOX MODAL -->
+<div id="photo-modal" onclick="closePhotoModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:1000;align-items:center;justify-content:center;padding:16px;">
+  <div style="position:relative;max-width:92vw;max-height:90vh;" onclick="event.stopPropagation()">
+    <img id="photo-modal-img" src="" alt="Foto Absensi"
+      style="max-width:92vw;max-height:85vh;border-radius:12px;object-fit:contain;display:block;box-shadow:0 8px 40px rgba(0,0,0,.5);">
+    <div id="photo-modal-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;">⏳ Memuat foto...</div>
+    <button onclick="closePhotoModal()" style="position:absolute;top:-14px;right:-14px;background:white;border:none;border-radius:50%;width:34px;height:34px;font-size:20px;font-weight:bold;cursor:pointer;line-height:1;color:#1E1C43;box-shadow:0 2px 8px rgba(0,0,0,.3);">✕</button>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="modal-overlay" id="success-modal">
+  <div class="modal-box">
+    <div class="modal-icon">✅</div>
+    <h2>Absensi Berhasil!</h2>
+    <p>Data kehadiran kamu sudah tersimpan di sistem EFM.</p>
+    <button class="btn btn-primary" onclick="closeSuccessModal()">Selesai</button>
+  </div>
+</div>
+
+</div><!-- /#app -->
+</div><!-- /#desktop-layout -->
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+const API_URL='https://script.google.com/macros/s/AKfycbw9x7h3ybotWARoncs4nh12Q9dAZCUEMA5tfRkErVelDs58xbGIH9ZgOhN-DooJ9QALZg/exec';
+const COOKIE_KEY='EFM_SESSION';
+let STATE={token:null,kodePIC:null,namaPanggil:null,nomorID:null,currentOrderId:null,currentOrderData:null,gpsLat:null,gpsLng:null,orderLat:null,orderLng:null,gpsValid:null,resetRequestId:null,resetPolling:null,countdownInterval:null,signOrderId:null,signPreviewData:null};
+let cameraStream=null,scanInterval=null;
+
+function setCookie(n,v,d){const e=new Date();e.setTime(e.getTime()+(d*864e5));document.cookie=n+'='+encodeURIComponent(v)+';expires='+e.toUTCString()+';path=/;SameSite=Strict';}
+function getCookie(n){for(let c of document.cookie.split(';')){c=c.trim();if(c.startsWith(n+'='))return decodeURIComponent(c.substring(n.length+1));}return null;}
+function deleteCookie(n){document.cookie=n+'=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';}
+
+async function api(p){const r=await fetch(API_URL+'?'+new URLSearchParams(p).toString());return r.json();}
+
+// ✅ FIX CORS: Content-Type text/plain — ini fix utama "Gagal koneksi"
+async function apiPost(b){
+  const r=await fetch(API_URL,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=UTF-8'},
+    body:JSON.stringify(b)
+  });
+  return r.json();
+}
+
+// ✅ COMPRESS FOTO: Resize + compress sebelum upload (hemat bandwidth, cegah timeout)
+function compressPhoto(file,maxPx,quality){
+  maxPx=maxPx||1024;quality=quality||0.75;
+  return new Promise(function(res,rej){
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var img=new Image();
+      img.onload=function(){
+        var w=img.width,h=img.height;
+        if(w>maxPx||h>maxPx){
+          if(w>h){h=Math.round(h*maxPx/w);w=maxPx;}
+          else{w=Math.round(w*maxPx/h);h=maxPx;}
+        }
+        var c=document.createElement('canvas');
+        c.width=w;c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        res(c.toDataURL('image/jpeg',quality));
+      };
+      img.onerror=rej;
+      img.src=e.target.result;
+    };
+    reader.onerror=rej;
+    reader.readAsDataURL(file);
+  });
+}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const el=document.getElementById('page-'+id);
+  if(el){el.classList.add('active');window.scrollTo(0,0);}
+  if(id==='scan')startCamera();
+  else stopCamera();
+  if(id==='history')loadHistory();
+  if(id==='dashboard')loadDashboard();
+}
+
+function showMsg(id,text,type){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className='msg show msg-'+type;}
+function hideMsg(id){const el=document.getElementById(id);if(el)el.className='msg';}
+
+// SVG icons untuk eye toggle
+const EYE_OPEN='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_CLOSED='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+function togglePIN(inputId, btnId){
+  const input=document.getElementById(inputId);
+  const btn=document.getElementById(btnId);
+  if(!input||!btn)return;
+  const isHidden=input.type==='password';
+  input.type=isHidden?'text':'password';
+  btn.innerHTML=isHidden?EYE_CLOSED:EYE_OPEN;
+  btn.style.color=isHidden?'var(--navy)':'#94a3b8';
+  input.focus();
+}
+
+async function init(){
+  const urlParams=new URLSearchParams(window.location.search);
+  const orderFromUrl=urlParams.get('order')||urlParams.get('id');
+  const saved=getCookie(COOKIE_KEY);
+  if(saved){
+    try{
+      const session=JSON.parse(saved);
+      const res=await api({action:'validateToken',token:session.token});
+      if(res.valid){
+        Object.assign(STATE,{
+          token:    session.token,
+          kodePIC:  res.kodePIC,
+          namaPanggil: res.nama   // ← fix: map nama → namaPanggil
+        });
+        hideLanding();
+        if(orderFromUrl){goToAbsen(orderFromUrl);}
+        else{loadDashboard();showPage('dashboard');}
+        return;
+      }
+    }catch(e){}
+  }
+  hideLanding();
+  showPage('login');
+  if(orderFromUrl)STATE.currentOrderId=orderFromUrl;
+}
+
+function hideLanding(){const ls=document.getElementById('loading-screen');ls.style.opacity='0';setTimeout(()=>ls.style.display='none',400);}
+
+async function doLogin(){
+  const kodePIC=document.getElementById('login-kode-pic').value.trim().toUpperCase();
+  const pin=document.getElementById('login-pin').value.trim();
+  hideMsg('login-msg');
+  if(!kodePIC)return showMsg('login-msg','⚠️ Masukkan Kode PIC kamu dulu','error');
+  if(!pin)return showMsg('login-msg','⚠️ Masukkan PIN dulu','error');
+  const btn=document.getElementById('btn-login');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Memverifikasi...';
+  try{
+    const res=await api({action:'login',kodePIC,pin});
+    btn.disabled=false;btn.innerHTML='🔐 Masuk';
+    if(!res.success){
+      document.getElementById('login-pin').value='';
+      document.getElementById('login-pin').focus();
+      // Jika terkunci → pergi ke lock page
+      if(res.locked && res.lockedUntil){
+        showLockPage(res.lockedUntil, res.showResetButton||false);
+        return;
+      }
+      // Jika round 2 (showResetButton, belum terkunci) → lock page tanpa timer
+      if(res.showResetButton){
+        showLockPage(null, true);
+        return;
+      }
+      showMsg('login-msg','❌ '+res.message,'error');
+      return;
+    }
+    // Login berhasil
+    stopLockCountdown();
+    stopResetPolling();
+    Object.assign(STATE,{token:res.token,kodePIC:res.kodePIC,namaPanggil:res.nama,nomorID:res.nomorID});
+    setCookie(COOKIE_KEY,JSON.stringify({token:res.token}),1);
+    if(STATE.currentOrderId){goToAbsen(STATE.currentOrderId);}
+    else{loadDashboard();showPage('dashboard');}
+  }catch(e){
+    showMsg('login-msg','❌ Gagal koneksi. Periksa internet dan coba lagi.','error');
+    btn.disabled=false;btn.innerHTML='🔐 Masuk';
+  }
+}
+
+async function doSignUp(){
+  const kodePIC=document.getElementById('signup-kode-pic').value.trim().toUpperCase();
+  const pin=document.getElementById('signup-pin').value.trim();
+  const confirmPin=document.getElementById('signup-confirm-pin').value.trim();
+  hideMsg('signup-msg');
+  if(!kodePIC)return showMsg('signup-msg','⚠️ Masukkan Kode PIC kamu dulu','error');
+  if(!pin)return showMsg('signup-msg','⚠️ Buat PIN dulu','error');
+  if(pin.length!==6||!/^\d{6}$/.test(pin))return showMsg('signup-msg','⚠️ PIN harus 6 digit angka','error');
+  if(!confirmPin)return showMsg('signup-msg','⚠️ Konfirmasi PIN dulu','error');
+  if(pin!==confirmPin)return showMsg('signup-msg','❌ PIN dan konfirmasi PIN tidak sama','error');
+  const btn=document.getElementById('btn-signup');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Mendaftarkan...';
+  try{
+    const res=await api({action:'signUp',kodePIC,pin,confirmPin});
+    btn.disabled=false;btn.innerHTML='✅ Daftar Sekarang';
+    if(!res.success){showMsg('signup-msg','❌ '+res.message,'error');return;}
+    Object.assign(STATE,{token:res.token,kodePIC:res.kodePIC,namaPanggil:res.nama,nomorID:res.nomorID});
+    setCookie(COOKIE_KEY,JSON.stringify({token:res.token}),1);
+    showMsg('signup-msg','✅ '+res.message,'success');
+    setTimeout(()=>{
+      if(STATE.currentOrderId){goToAbsen(STATE.currentOrderId);}
+      else{loadDashboard();showPage('dashboard');}
+    },1500);
+  }catch(e){showMsg('signup-msg','❌ Gagal koneksi. Periksa internet dan coba lagi.','error');btn.disabled=false;btn.innerHTML='✅ Daftar Sekarang';}
+}
+
+// ── LOCK PAGE FUNCTIONS ──────────────────────────────────────────
+function showLockPage(lockedUntilISO, showResetBtn){
+  showLockState('locked');
+  // Tampilkan / sembunyikan tombol ajukan unlock
+  const reqBtn=document.getElementById('lock-btn-request');
+  reqBtn.style.display=showResetBtn?'flex':'none';
+  // Tampilkan / sembunyikan timer box
+  const timerBox=document.getElementById('lock-timer-box');
+  if(lockedUntilISO){
+    timerBox.style.display='block';
+    startLockCountdown(lockedUntilISO,showResetBtn);
+  } else {
+    timerBox.style.display='none';
+  }
+  showPage('lock');
+}
+
+function showLockState(state){
+  ['locked','waiting','approved','rejected'].forEach(s=>{
+    const el=document.getElementById('lock-state-'+s);
+    if(el)el.style.display=s===state?'block':'none';
+  });
+}
+
+function startLockCountdown(lockedUntilISO, showResetBtnOnDone){
+  stopLockCountdown();
+  const timerEl=document.getElementById('lock-timer-display');
+  const reqBtn=document.getElementById('lock-btn-request');
+  function tick(){
+    const remaining=Math.ceil((new Date(lockedUntilISO)-new Date())/1000);
+    if(remaining<=0){
+      stopLockCountdown();
+      // Timer habis → otomatis balik ke login
+      showPage('login');
+      hideMsg('login-msg');
+      showMsg('login-msg','✅ Silakan coba login kembali','success');
+      document.getElementById('login-pin').focus();
+      if(showResetBtnOnDone){
+        // Round 2: lock page terbuka lagi tapi tanpa timer, reset btn langsung tampil
+        // (ini bisa terjadi kalau timer habis dan round >= 2, tapi tetap di login page)
+      }
+      return;
+    }
+    const m=Math.floor(remaining/60).toString().padStart(2,'0');
+    const s=(remaining%60).toString().padStart(2,'0');
+    timerEl.textContent=m+':'+s;
+  }
+  tick();
+  STATE.countdownInterval=setInterval(tick,1000);
+}
+
+function stopLockCountdown(){
+  if(STATE.countdownInterval){clearInterval(STATE.countdownInterval);STATE.countdownInterval=null;}
+}
+
+async function doRequestReset(){
+  const kodePIC=document.getElementById('login-kode-pic').value.trim().toUpperCase();
+  if(!kodePIC){showPage('login');showMsg('login-msg','⚠️ Masukkan Kode PIC kamu dulu','error');return;}
+  const btn=document.getElementById('lock-btn-request');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Mengirim...';
+  try{
+    const res=await api({action:'requestPINReset',kodePIC});
+    btn.disabled=false;btn.innerHTML='<i class="ti ti-lock-open" style="font-size:18px;"></i> Ajukan Unlock ke Admin';
+    if(!res.success){
+      showPage('login');
+      showMsg('login-msg','❌ '+res.message,'error');
+      return;
+    }
+    STATE.resetRequestId=res.requestId;
+    // Update kode di waiting state
+    const kodeEl=document.getElementById('lock-waiting-kode');
+    if(kodeEl)kodeEl.textContent=kodePIC;
+    stopLockCountdown();
+    showLockState('waiting');
+    startResetPolling(res.requestId);
+  }catch(e){
+    btn.disabled=false;btn.innerHTML='<i class="ti ti-lock-open" style="font-size:18px;"></i> Ajukan Unlock ke Admin';
+    showPage('login');
+    showMsg('login-msg','❌ Gagal kirim request. Coba lagi.','error');
+  }
+}
+
+function startResetPolling(requestId){
+  stopResetPolling();
+  STATE.resetPolling=setInterval(async()=>{
+    try{
+      const res=await api({action:'checkResetStatus',requestId});
+      if(res.status==='approved'){
+        stopResetPolling();
+        stopLockCountdown();
+        showLockState('approved');
+      } else if(res.status==='rejected'){
+        stopResetPolling();
+        showLockState('rejected');
+      }
+    }catch(e){}
+  },10000);
+}
+
+function stopResetPolling(){
+  if(STATE.resetPolling){clearInterval(STATE.resetPolling);STATE.resetPolling=null;}
+}
+
+async function doLogout(){
+  if(!confirm('Yakin mau keluar?'))return;
+  stopCamera();
+  try{await api({action:'logout',token:STATE.token});}catch(e){}
+  deleteCookie(COOKIE_KEY);
+  STATE={token:null,kodePIC:null,namaPanggil:null,nomorID:null,currentOrderId:null,currentOrderData:null,gpsLat:null,gpsLng:null,orderLat:null,orderLng:null,gpsValid:null};
+  showPage('login');
+}
+
+async function loadDashboard(){
+  const hari=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const bulan=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  const now=new Date();
+  document.getElementById('dash-greeting').textContent='Halo, '+(STATE.namaPanggil||'Pelatih')+'! 👋';
+  document.getElementById('dash-date').textContent=hari[now.getDay()]+', '+now.getDate()+' '+bulan[now.getMonth()]+' '+now.getFullYear();
+  try{
+    const res=await api({action:'getDashboard',token:STATE.token,kodePIC:STATE.kodePIC});
+    if(res.success){
+      document.getElementById('dash-total-paket').textContent=res.totalActivePackets||0;
+      document.getElementById('dash-total-potensi').textContent=fmtRpShort(res.totalPotensi||0);
+      renderPaketAktif(res.activePackets||[]);
+    }
+  }catch(e){
+    document.getElementById('dash-total-paket').textContent='—';
+    document.getElementById('dash-total-potensi').textContent='—';
+  }
+}
+
+function fmtRpShort(n){
+  if(!n||n===0)return'Rp 0';
+  if(n>=1000000)return'Rp '+(n/1000000).toFixed(1).replace('.0','')+'jt';
+  if(n>=1000)return'Rp '+(n/1000).toFixed(0)+'rb';
+  return'Rp '+n;
+}
+
+function renderPaketAktif(packets){
+  const el=document.getElementById('dash-paket-aktif');
+  if(!packets.length){
+    el.innerHTML='<p style="text-align:center;font-size:13px;color:var(--gray);padding:20px;">Tidak ada paket aktif saat ini</p>';
+    return;
+  }
+  el.innerHTML=packets.map(p=>{
+    const pct=p.totalSesi>0?Math.min(100,Math.round((p.sesiSelesai/p.totalSesi)*100)):0;
+    return`<div class="paket-card">
+      <div class="paket-header">
+        <div><div class="paket-client">${p.clientName}</div><div class="paket-program">${p.namaLatihan||p.program}</div></div>
+        <div class="paket-badge">${p.sesiSelesai}/${p.totalSesi||'?'} sesi</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="paket-meta"><span>📍 ${p.lokasi}</span><span>⏱ ${p.masaHabis||p.hari||'-'}</span></div>
+      ${p.tglSelesai?`<div class="paket-tgl">⏰ Berakhir: ${p.tglSelesai}</div>`:''}
+      <div class="paket-biaya">${fmtRpShort(p.biayaPaket)}</div>
+    </div>`;
+  }).join('');
+}
+
+async function startCamera(){
+  const video=document.getElementById('camera-video');
+  const container=document.getElementById('camera-container');
+  const fallback=document.getElementById('scan-fallback');
+  hideMsg('scan-msg');
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){container.style.display='none';fallback.style.display='block';return;}
+  try{
+    const constraints={video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}};
+    cameraStream=await navigator.mediaDevices.getUserMedia(constraints);
+    video.srcObject=cameraStream;
+    container.style.display='flex';fallback.style.display='none';
+    video.addEventListener('loadedmetadata',()=>{video.play();startQRScan();});
+  }catch(err){
+    container.style.display='none';fallback.style.display='block';
+    if(err.name==='NotAllowedError'){showMsg('scan-msg','⚠️ Izin kamera ditolak. Aktifkan izin kamera di pengaturan browser.','error');}
+  }
+}
+
+function stopCamera(){
+  if(scanInterval){clearInterval(scanInterval);scanInterval=null;}
+  if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}
+  const video=document.getElementById('camera-video');
+  if(video)video.srcObject=null;
+}
+
+function startQRScan(){
+  const video=document.getElementById('camera-video');
+  const canvas=document.getElementById('camera-canvas');
+  const ctx=canvas.getContext('2d');
+  scanInterval=setInterval(()=>{
+    if(video.readyState!==video.HAVE_ENOUGH_DATA)return;
+    canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+    ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+    const code=jsQR(imageData.data,imageData.width,imageData.height,{inversionAttempts:'dontInvert'});
+    if(code){
+      stopCamera();
+      const qrText=code.data;
+      let orderId=qrText;
+      try{const url=new URL(qrText);orderId=url.searchParams.get('order')||url.searchParams.get('id')||qrText;}catch(e){orderId=qrText;}
+      showMsg('scan-msg','✅ QR berhasil dibaca! Membuka form absensi...','success');
+      setTimeout(()=>goToAbsen(orderId.trim().toUpperCase()),600);
+    }
+  },300);
+}
+
+function readQRFromPhoto(event){
+  const file=event.target.files[0];if(!file)return;
+  hideMsg('scan-msg');showMsg('scan-msg','⏳ Membaca QR dari foto...','info');
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const image=new Image();
+    image.onload=function(){
+      const canvas=document.createElement('canvas');
+      canvas.width=image.width;canvas.height=image.height;
+      const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);
+      const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+      const code=jsQR(imageData.data,imageData.width,imageData.height,{inversionAttempts:'dontInvert'});
+      if(code){
+        const qrText=code.data;let orderId=qrText;
+        try{const url=new URL(qrText);orderId=url.searchParams.get('order')||url.searchParams.get('id')||qrText;}catch(e){orderId=qrText;}
+        showMsg('scan-msg','✅ QR berhasil dibaca!','success');
+        setTimeout(()=>goToAbsen(orderId.trim().toUpperCase()),600);
+      }else{showMsg('scan-msg','❌ QR tidak terbaca. Pastikan foto jelas dan coba lagi.','error');}
+    };
+    image.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+  event.target.value='';
+}
+
+async function goToAbsen(orderId){
+  STATE.currentOrderId   = orderId;
+  STATE.currentOrderData = null;  // reset agar GPS handler tidak trigger yellow badge prematur
+  STATE.orderLat         = null;
+  STATE.orderLng         = null;
+  STATE.gpsValid         = null;
+  STATE.gpsLat           = null;  // reset agar GPS deteksi ulang fresh
+  STATE.gpsLng           = null;
+  document.getElementById('absen-kode-pic').value=STATE.kodePIC||'';
+  document.getElementById('absen-nama-pic').value=STATE.namaPanggil||'';
+  document.getElementById('absen-order-label').textContent='Order ID: '+orderId;
+  document.getElementById('absen-order-card').style.display='none';
+  document.getElementById('absen-order-loading').style.display='flex';
+  document.getElementById('photo-preview').style.display='none';
+  document.getElementById('photo-upload-area').style.display='block';
+  document.getElementById('photo-input').value='';
+  document.getElementById('gps-distance').style.display='none';
+  document.getElementById('gps-block-banner').style.display='none';
+  document.getElementById('foto-section').style.display='block';
+  // Tombol disabled dulu — menunggu validasi GPS
+  const btn=document.getElementById('btn-submit');
+  btn.disabled=true;
+  btn.className='btn btn-blocked';
+  btn.innerHTML='⏳ Menunggu GPS...';
+  hideMsg('absen-msg');
+  showPage('absen');
+  getGPS();
+  try{
+    const res=await api({action:'getOrderData',orderId});
+    document.getElementById('absen-order-loading').style.display='none';
+    if(!res.success){showMsg('absen-msg','❌ '+res.message,'error');return;}
+    STATE.currentOrderData=res;
+    STATE.orderLat=res.latitude?parseFloat(res.latitude):null;
+    STATE.orderLng=res.longitude?parseFloat(res.longitude):null;
+    // Backup: kalau STATE.namaPanggil kosong, ambil dari data orderan (kolom Y)
+    if(!STATE.namaPanggil && res.namaPIC) STATE.namaPanggil=res.namaPIC;
+    document.getElementById('absen-nama-pic').value=STATE.namaPanggil||res.namaPIC||'';
+    document.getElementById('absen-client-name').textContent=res.clientName;
+    document.getElementById('absen-program').textContent=res.program;
+    document.getElementById('absen-lokasi').textContent=res.lokasi;
+    document.getElementById('absen-jadwal').textContent=(res.hari||'')+', '+(res.jam||'');
+    document.getElementById('absen-order-card').style.display='block';
+    // Jika tidak ada data lokasi di order → boleh submit tanpa validasi GPS
+    // Yellow badge akan muncul dari GPS handler setelah GPS selesai mendeteksi
+    if(!STATE.orderLat||!STATE.orderLng){
+      STATE.gpsValid=true;
+      btn.disabled=false;
+      btn.className='btn btn-primary';
+      btn.innerHTML='✅ Submit Absensi';
+    } else if(STATE.gpsLat){
+      // GPS sudah ada → hitung jarak sekarang
+      showGPSDistance();
+    }
+  }catch(e){document.getElementById('absen-order-loading').style.display='none';showMsg('absen-msg','❌ Gagal memuat data order','error');}
+}
+
+function getGPS(){
+  const el=document.getElementById('gps-status');
+  el.innerHTML='<span>📍</span><p style="font-size:12px;color:var(--gray);">Mendeteksi lokasi GPS...</p>';el.style.background='#f1f5f9';el.style.border='none';
+  document.getElementById('gps-distance').style.display='none';
+  if(!navigator.geolocation){
+    el.innerHTML='<span>⚠️</span><p style="font-size:12px;color:#9a3a28;">GPS tidak tersedia di browser ini</p>';el.style.background='#FDF0EE';
+    // Kalau tidak ada GPS dan tidak ada koordinat order → boleh submit
+    if(!STATE.orderLat){const btn=document.getElementById('btn-submit');btn.disabled=false;btn.className='btn btn-primary';btn.innerHTML='✅ Submit Absensi';}
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      STATE.gpsLat=pos.coords.latitude;
+      STATE.gpsLng=pos.coords.longitude;
+      el.innerHTML='<span>📍</span><p style="font-size:12px;color:var(--green-text);font-weight:600;">GPS aktif — lokasi kamu berhasil terdeteksi</p>';
+      el.style.background='var(--green-bg)';el.style.border='1.5px solid #bbf7d0';
+      // Hitung jarak jika data order sudah ada
+      if(STATE.orderLat){
+        showGPSDistance();
+      } else if(STATE.currentOrderData){
+        // Order ada tapi tidak punya koordinat → boleh submit, tampilkan info kuning
+        const btn=document.getElementById('btn-submit');
+        btn.disabled=false;btn.className='btn btn-primary';btn.innerHTML='✅ Submit Absensi';
+        const distEl=document.getElementById('gps-distance');
+        distEl.style.display='flex';
+        distEl.style.background='#fffbeb';
+        distEl.style.border='1.5px solid #fcd34d';
+        const distTxt=document.getElementById('gps-distance-text');
+        distTxt.textContent='ℹ️ Validasi jarak tidak aktif — koordinat lokasi belum diset di sistem';
+        distTxt.style.color='#92400e';
+        distTxt.style.fontWeight='500';
+      }
+    },
+    err=>{
+      el.innerHTML='<span>⚠️</span><p style="font-size:12px;color:#9a3a28;font-weight:600;">GPS gagal: '+err.message+'</p>';
+      el.style.background='#FDF0EE';el.style.border='1.5px solid #fca5a5';
+      // GPS gagal → kalau ada koordinat order, blokir. Kalau tidak ada, boleh submit.
+      if(STATE.orderLat){
+        STATE.gpsValid=false;
+        const btn=document.getElementById('btn-submit');
+        btn.disabled=true;btn.className='btn btn-blocked';btn.innerHTML='Tidak Bisa Absen, lokasimu salah!';
+        document.getElementById('foto-section').style.display='none';
+        document.getElementById('gps-block-banner').style.display='block';
+        document.getElementById('block-distance-text').textContent='GPS tidak aktif';
+      } else {
+        const btn=document.getElementById('btn-submit');
+        btn.disabled=false;btn.className='btn btn-primary';btn.innerHTML='✅ Submit Absensi';
+      }
+    },
+    {enableHighAccuracy:true,timeout:15000,maximumAge:0}
+  );
+}
+
+// Hitung jarak antara 2 koordinat (Haversine formula) → return meter
+function calcDistance(lat1,lng1,lat2,lng2){
+  const R=6371000; // Radius bumi dalam meter
+  const dLat=(lat2-lat1)*Math.PI/180;
+  const dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)*Math.sin(dLng/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// Tampilkan badge jarak GPS device vs lokasi order
+function showGPSDistance(){
+  if(!STATE.gpsLat||!STATE.gpsLng||!STATE.orderLat||!STATE.orderLng) return;
+  const dist=Math.round(calcDistance(STATE.gpsLat,STATE.gpsLng,STATE.orderLat,STATE.orderLng));
+  const el=document.getElementById('gps-distance');
+  const txt=document.getElementById('gps-distance-text');
+  const banner=document.getElementById('gps-block-banner');
+  const fotoSection=document.getElementById('foto-section');
+  const btn=document.getElementById('btn-submit');
+  el.style.display='flex';
+
+  if(dist<=300){
+    // ✅ VALID — dalam radius 300m → tampilkan foto, aktifkan tombol
+    STATE.gpsValid=true;
+    txt.textContent='Kamu berada di lokasi yang benar: '+dist+' m ✅';
+    txt.style.color='var(--green-text)';
+    txt.style.fontWeight='700';
+    el.style.background='var(--green-bg)';
+    el.style.border='1.5px solid #bbf7d0';
+    banner.style.display='none';
+    fotoSection.style.display='block';
+    btn.disabled=false;
+    btn.className='btn btn-primary';
+    btn.innerHTML='✅ Submit Absensi';
+
+  } else {
+    // ❌ INVALID — terlalu jauh → sembunyikan foto, tampilkan banner, blokir tombol
+    STATE.gpsValid=false;
+    const km=(dist/1000).toFixed(1);
+    const distLabel=dist>=1000?km+' km':dist+' m';
+    txt.textContent='Lokasi tidak sesuai: '+distLabel+' dari lokasi klien ❌';
+    txt.style.color='#dc2626';
+    txt.style.fontWeight='700';
+    el.style.background='#fff5f5';
+    el.style.border='1.5px solid #fca5a5';
+    banner.style.display='block';
+    document.getElementById('block-distance-text').textContent=distLabel+' dari lokasi klien';
+    fotoSection.style.display='none';
+    btn.disabled=true;
+    btn.className='btn btn-blocked';
+    btn.innerHTML='Tidak Bisa Absen, lokasimu salah!';
+  }
+}
+
+function handlePhoto(e){
+  const file=e.target.files[0];if(!file)return;
+  document.getElementById('photo-preview').src=URL.createObjectURL(file);
+  document.getElementById('photo-preview').style.display='block';
+  document.getElementById('photo-upload-area').style.display='none';
+}
+
+// ✅ SUBMIT ABSENSI — dengan foto compression & error detail
+let IS_SUBMITTING = false;
+
+function toggleSesi(id, btn, count){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const isHidden=el.style.display==='none';
+  el.style.display=isHidden?'block':'none';
+  btn.innerHTML=isHidden
+    ?'▲ Sembunyikan'
+    :'▼ Lihat +'+count+' sesi lainnya';
+}
+
+function openPhotoModal(driveUrl){
+  const modal=document.getElementById('photo-modal');
+  const img=document.getElementById('photo-modal-img');
+  const loading=document.getElementById('photo-modal-loading');
+  // Extract file ID dari Google Drive URL
+  const match=driveUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if(!match){ window.open(driveUrl,'_blank'); return; }
+  const fileId=match[1];
+  const thumbUrl='https://drive.google.com/thumbnail?id='+fileId+'&sz=w1000';
+  img.style.display='none';
+  loading.style.display='flex';
+  modal.style.display='flex';
+  document.body.style.overflow='hidden';
+  img.onload=()=>{ loading.style.display='none'; img.style.display='block'; };
+  img.onerror=()=>{ loading.innerHTML='⚠️ Foto gagal dimuat'; };
+  img.src=thumbUrl;
+}
+
+function closePhotoModal(){
+  const modal=document.getElementById('photo-modal');
+  modal.style.display='none';
+  document.getElementById('photo-modal-img').src='';
+  document.getElementById('photo-modal-loading').innerHTML='⏳ Memuat foto...';
+  document.body.style.overflow='';
+}
+
+function formatSesiTimestamp(ts){
+  // Input: "04/06/2026 19:59"  →  Output: "Selasa, 4 Juni 2026 jam 19:59"
+  if(!ts) return ts;
+  const [datePart, timePart] = ts.split(' ');
+  if(!datePart) return ts;
+  const [dd, mm, yyyy] = datePart.split('/');
+  if(!dd||!mm||!yyyy) return ts;
+  const date   = new Date(parseInt(yyyy), parseInt(mm)-1, parseInt(dd));
+  const days   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const months = ['Januari','Februari','Maret','April','Mei','Juni',
+                  'Juli','Agustus','September','Oktober','November','Desember'];
+  return days[date.getDay()] + ', ' + parseInt(dd) + ' ' + months[date.getMonth()] +
+         ' ' + yyyy + ' jam ' + (timePart||'');
+}
+
+async function submitAbsensi(){
+  // ── BLOKIR DOUBLE-TAP — cek flag sebelum apapun ──
+  if(IS_SUBMITTING) return;
+  IS_SUBMITTING = true;
+
+  hideMsg('absen-msg');
+  if(!STATE.currentOrderData){IS_SUBMITTING=false;return showMsg('absen-msg','⚠️ Order ID tidak valid','error');}
+  // ── HARD BLOCK: cek GPS validity sebelum apapun ──
+  if(STATE.gpsValid===false){
+    IS_SUBMITTING=false;
+    showMsg('absen-msg','🚫 Absensi ditolak — kamu tidak berada di lokasi klien. Pergi ke lokasi yang benar dulu.','error');
+    return;
+  }
+  const photoFile=document.getElementById('photo-input').files[0];
+  if(!photoFile){IS_SUBMITTING=false;return showMsg('absen-msg','⚠️ Upload foto kehadiran dulu','error');}
+  try{const d=await api({action:'checkDuplicate',orderId:STATE.currentOrderId});if(d.duplicate&&!confirm('⚠️ Kamu sudah absen untuk Order ID ini hari ini.\n\nTetap submit?')){IS_SUBMITTING=false;return;}}catch(e){}
+  const btn=document.getElementById('btn-submit');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span> Kompres foto...';
+  try{
+    // Compress foto sebelum kirim
+    const base64Photo=await compressPhoto(photoFile);
+    btn.innerHTML='<span class="spinner"></span> Menyimpan...';
+    const res=await apiPost({
+      action:'saveAttendance',
+      token:STATE.token,
+      kodePIC:STATE.kodePIC,
+      namaPIC:STATE.namaPanggil,
+      orderId:STATE.currentOrderId,
+      base64Photo,
+      latitude:STATE.gpsLat||'',
+      longitude:STATE.gpsLng||'',
+      device:navigator.userAgent
+    });
+    IS_SUBMITTING=false;
+    btn.disabled=false;btn.innerHTML='✅ Submit Absensi';
+    if(!res.success){
+      if(res.limitReached){
+        showMsg('absen-msg','📦 '+res.message,'warning');
+        btn.disabled=true;btn.style.opacity='0.4';
+        btn.innerHTML='🚫 Paket Sudah Selesai';
+        return;
+      }
+      showMsg('absen-msg','❌ '+res.message,'error');
+      return;
+    }
+    document.getElementById('success-modal').classList.add('show');
+  }catch(e){
+    IS_SUBMITTING=false;
+    btn.disabled=false;btn.innerHTML='✅ Submit Absensi';
+    showMsg('absen-msg','❌ Submit gagal: '+(e.message||'Coba lagi'),'error');
+  }
+}
+
+function closeSuccessModal(){
+  document.getElementById('success-modal').classList.remove('show');
+  STATE.currentOrderId=null;STATE.currentOrderData=null;
+  document.getElementById('photo-preview').style.display='none';
+  document.getElementById('photo-upload-area').style.display='block';
+  document.getElementById('photo-input').value='';
+  loadDashboard();showPage('dashboard');
+}
+
+async function loadHistory(){
+  document.getElementById('hist-nama').textContent=STATE.namaPanggil||'—';
+  document.getElementById('hist-kode').textContent=STATE.kodePIC||'—';
+  const loadEl=document.getElementById('hist-loading');
+  const contEl=document.getElementById('hist-content');
+  loadEl.style.display='flex';contEl.style.display='none';
+  try{
+    const res=await api({action:'getHistory',token:STATE.token,kodePIC:STATE.kodePIC});
+    loadEl.style.display='none';contEl.style.display='block';
+
+    if(!res.success||!res.data||!res.data.length){
+      contEl.innerHTML='<p style="text-align:center;font-size:13px;color:var(--gray);padding:32px 20px;">Belum ada paket terdaftar untuk akun ini.</p>';
+      return;
+    }
+
+    // ── Render cards per klien (tanpa rekap box atas) ──
+    let html='';
+    res.data.forEach(p=>{
+      const isDone     = p.statusPaket === 'SELESAI';
+      const isBatal    = p.statusPaket === 'BATAL';
+      const isComplete = isDone || (p.totalSesi > 0 && p.sesiSelesai >= p.totalSesi);
+      const pct        = p.totalSesi > 0 ? Math.min(100, Math.round(p.sesiSelesai / p.totalSesi * 100)) : (p.sesiSelesai > 0 ? 100 : 0);
+      const fillCls    = isComplete ? 'progress-fill done' : 'progress-fill';
+      const payStatus  = p.paymentStatus;
+
+      // Badge status paket
+      const paketBadge = isDone
+        ? '<span class="badge" style="background:var(--green-bg);color:var(--green-text);border:1px solid rgba(34,197,94,.3);">✓ SELESAI</span>'
+        : isBatal
+          ? '<span class="badge" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;">BATAL</span>'
+          : '<span class="badge badge-orange">'+p.sesiSelesai+'/'+(p.totalSesi||'?')+' sesi</span>';
+
+      // Badge pembayaran (kalau ada)
+      let payBadge='';
+      if(payStatus==='PAID'){
+        payBadge='<div class="pay-badge pay-paid">✅ Pembayaran Lunas</div>';
+      }else if(payStatus==='PENDING'){
+        payBadge='<div class="pay-badge pay-pending">⏳ Menunggu Pembayaran ('+p.paymentNoRekap+')</div>';
+      }
+
+      // Tombol Ajukan — selalu tampil, disabled kalau belum selesai
+      let btnAjukan='';
+      const sisaSesi = p.totalSesi > 0 ? Math.max(0, p.totalSesi - p.sesiSelesai) : 0;
+      if(!isComplete && !payStatus){
+        const infoTeks = sisaSesi > 0
+          ? sisaSesi + ' sesi lagi untuk selesaikan paket'
+          : 'Belum ada sesi tercatat';
+        btnAjukan='<button class="btn-ajukan" disabled style="background:#94a3b8;cursor:not-allowed;opacity:1;">📋 Ajukan Rekap & Pembayaran</button>'
+          +'<p style="font-size:11px;color:var(--gray);text-align:center;margin-top:6px;">'+infoTeks+'</p>';
+      }else if(isComplete && !payStatus){
+        // Semua sesi selesai, belum ajukan — AKTIF
+        btnAjukan='<button class="btn-ajukan" onclick="goToSign(\''+p.orderId+'\',\''+encodeURIComponent(p.clientName)+'\')">📋 Ajukan Rekap Absen & Pembayaran</button>';
+      }else if(payStatus==='PAID'){
+        btnAjukan=
+          '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--green);border-radius:10px;padding:11px 14px;cursor:default;">' +
+          '<span style="color:#fff;font-size:13px;font-weight:600;">✅ Pembayaran Lunas</span>' +
+          '<span style="color:rgba(255,255,255,.85);font-size:11px;font-weight:500;letter-spacing:.3px;">' + (p.paymentNoRekap||'') + '</span>' +
+          '</div>';
+        if(p.paymentApprovedUrl){
+          btnAjukan+='<a href="'+p.paymentApprovedUrl+'" target="_blank" class="btn-download-rekap">📥 Download Rekap Absen (PDF Final)</a>';
+        }
+      }else if(payStatus==='PENDING'){
+        btnAjukan='<button class="btn-ajukan" disabled style="background:#e65100;cursor:not-allowed;opacity:1;">⏳ Menunggu Konfirmasi Pembayaran</button>'
+          +'<p style="font-size:11px;color:var(--gray);text-align:center;margin-top:6px;">Admin akan konfirmasi setelah pembayaran diterima</p>';
+      }
+
+      // Sesi list (5 pertama tampil, sisanya toggle)
+      let sesiHtml='';
+      if(p.sesiList&&p.sesiList.length>0){
+        const renderSesi=(s)=>`
+          <div class="sesi-item">
+            <div class="sesi-num">${s.noSesi}</div>
+            <div class="sesi-info"><p>${formatSesiTimestamp(s.timestamp)}</p></div>
+            ${s.photoUrl?'<a class="sesi-foto" href="javascript:void(0)" onclick="openPhotoModal(\''+s.photoUrl+'\')" style="display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;min-width:44px;"><span style="font-size:20px;">📷</span>Lihat Foto</a>':''}
+          </div>`;
+        const shown=p.sesiList.slice(0,5);
+        const extra=p.sesiList.slice(5);
+        sesiHtml=shown.map(renderSesi).join('');
+        if(extra.length>0){
+          const eid='sx-'+p.orderId.replace(/[^a-zA-Z0-9]/g,'');
+          sesiHtml+=`<div id="${eid}" style="display:none;">${extra.map(renderSesi).join('')}</div>
+            <button onclick="toggleSesi('${eid}',this,${extra.length})"
+              style="width:100%;background:transparent;border:1px dashed var(--border);border-radius:8px;padding:9px;font-size:12px;color:var(--navy);font-weight:600;cursor:pointer;margin-top:8px;">
+              ▼ Lihat +${extra.length} sesi lainnya
+            </button>`;
+        }
+      }else{
+        sesiHtml='<p style="font-size:11px;color:var(--gray);text-align:center;padding:6px 0;">Belum ada sesi tercatat</p>';
+      }
+
+      html+=`<div class="rekap-card">
+        <div class="rekap-header">
+          <div><h3>${p.clientName}</h3><small>${p.orderId} · ${p.program}</small>${payBadge}</div>
+          ${paketBadge}
+        </div>
+        <div class="rekap-stats">
+          <div class="rekap-stat"><strong>${p.sesiSelesai}</strong><span>Hadir</span></div>
+          <div class="rekap-stat"><strong style="font-size:13px;">${p.biayaSesi>0?formatRp(p.biayaSesi):'—'}</strong><span>Per sesi</span></div>
+          <div class="rekap-stat"><strong style="font-size:13px;${p.totalBayaran>0?'color:var(--navy);':''}">${p.totalBayaran>0?formatRp(p.totalBayaran):'—'}</strong><span>Total</span></div>
+        </div>
+        <div class="progress-bar"><div class="${fillCls}" style="width:${pct}%"></div></div>
+        <div class="paket-meta"><span>📍 ${p.lokasi||'-'}</span><span>📋 ${p.totalSesi||'?'} sesi · ${p.masaHabis||'-'}</span></div>
+        <div style="margin-top:10px;">${sesiHtml}</div>
+        ${btnAjukan}
+      </div>`;
+    });
+    contEl.innerHTML=html;
+  }catch(e){
+    loadEl.style.display='none';
+    contEl.style.display='block';
+    contEl.innerHTML='<p style="text-align:center;color:var(--gray);font-size:13px;padding:20px;">Gagal memuat data. Periksa koneksi internet.</p>';
+  }
+}
+
+function formatRp(n){if(!n||n===0)return'Rp 0';if(n>=1000000)return'Rp '+(n/1000000).toFixed(1).replace('.0','')+'jt';if(n>=1000)return'Rp '+(n/1000).toFixed(0)+'rb';return'Rp '+n.toLocaleString('id-ID');}
+
+// ── SIGN PAGE — Ajukan Rekap & Pembayaran ───────────────────
+let SIGN_DRAWING=false, SIGN_SIGNED=false;
+
+async function goToSign(orderId, clientNameEncoded){
+  STATE.signOrderId = orderId;
+  STATE.signPreviewData = null;
+  document.getElementById('sign-client-name').textContent = decodeURIComponent(clientNameEncoded)||'—';
+  document.getElementById('sign-order-id').textContent    = orderId;
+  document.getElementById('sign-loading').style.display   = 'flex';
+  document.getElementById('sign-content').style.display   = 'none';
+  showPage('sign');
+
+  try{
+    const res = await api({action:'getRekapPreview',token:STATE.token,kodePIC:STATE.kodePIC,orderId});
+    if(!res.success){ alert(res.message||'Gagal memuat data rekap'); showPage('history'); return; }
+    STATE.signPreviewData = res;
+
+    // Render preview fields
+    const frp = (n)=>n>0?formatRp(n):'—';
+    const fields = [
+      ['ID Order',          res.orderId],
+      ['Nama Pendaftar',    res.namaPendaftar||'—'],
+      ['Nama Klien',        res.namaKlien],
+      ['Nama Latihan',    res.namaLatihan||'—'],
+      ['Program',           res.namaProgram],
+      ['Hari & Jam',        (res.hari||'—')+' · '+(res.jam||'—')],
+      ['Lokasi',            res.lokasi||'—'],
+      ['Masa Habis Paket',  res.masaHabis||'—'],
+      ['Jumlah Sesi',       (res.totalSesi||'?')+' sesi'],
+      ['Sesi Tercatat',     res.sesiSelesai+' sesi'],
+      ['Biaya Per Sesi',    frp(res.biayaSesi)],
+      ['Total Bayaran',     frp(res.totalBayaran),'total'],
+      ['Bank',              (res.namaBank||'—')+' · '+(res.noRekening||'—')],
+      ['Atas Nama',         res.atasNama||'—'],
+    ];
+    document.getElementById('sign-preview-fields').innerHTML =
+      fields.map(([l,v,cls])=>
+        '<div class="rekap-field"><span class="rekap-fl">'+l+'</span><span class="rekap-fv'+(cls?' '+cls:'')+'">'+v+'</span></div>'
+      ).join('');
+
+    // Render sesi list
+    const sl = res.sesiList||[];
+    document.getElementById('sign-sesi-list').innerHTML = sl.length
+      ? sl.map(s=>'<div class="sesi-item"><div class="sesi-num">'+s.noSesi+'</div><div class="sesi-info"><p>'+s.timestamp+'</p><small>'+s.status+'</small></div><span>'+(s.hasPhoto?'📷':'')+'</span></div>').join('')
+      : '<p style="font-size:12px;color:var(--gray);text-align:center;padding:8px;">Belum ada sesi tercatat</p>';
+
+    document.getElementById('sign-loading').style.display = 'none';
+    document.getElementById('sign-content').style.display = 'block';
+    setupSignCanvas();
+  }catch(e){
+    alert('Terjadi kesalahan: '+e.message);
+    showPage('history');
+  }
+}
+
+function setupSignCanvas(){
+  // Clone canvas untuk hapus event listeners lama
+  const old = document.getElementById('sign-canvas');
+  const fresh = old.cloneNode(true);
+  old.parentNode.replaceChild(fresh, old);
+
+  // Pakai context dari fresh canvas (BUKAN old canvas)
+  const ctx = fresh.getContext('2d');
+  ctx.clearRect(0, 0, fresh.width, fresh.height);
+  ctx.strokeStyle = '#111111';
+  ctx.lineWidth   = 2.5;
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+
+  SIGN_DRAWING = false;
+  SIGN_SIGNED  = false;
+  const ph = document.getElementById('sign-placeholder');
+  if(ph) ph.style.display = 'block';
+
+  const getPos = (e) => {
+    const r  = fresh.getBoundingClientRect();
+    const sx = fresh.width  / r.width;
+    const sy = fresh.height / r.height;
+    return e.touches
+      ? { x: (e.touches[0].clientX - r.left) * sx, y: (e.touches[0].clientY - r.top) * sy }
+      : { x: (e.clientX - r.left) * sx,             y: (e.clientY - r.top) * sy };
+  };
+
+  const start = (e) => {
+    e.preventDefault();
+    SIGN_DRAWING = true;
+    if(ph) ph.style.display = 'none';
+    const p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  };
+
+  const draw = (e) => {
+    e.preventDefault();
+    if(!SIGN_DRAWING) return;
+    const p = getPos(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    SIGN_SIGNED = true;
+  };
+
+  const end = () => { SIGN_DRAWING = false; };
+
+  fresh.addEventListener('mousedown',  start);
+  fresh.addEventListener('mousemove',  draw);
+  fresh.addEventListener('mouseup',    end);
+  fresh.addEventListener('touchstart', start, { passive: false });
+  fresh.addEventListener('touchmove',  draw,  { passive: false });
+  fresh.addEventListener('touchend',   end);
+}
+
+function clearSignature(){
+  const canvas = document.getElementById('sign-canvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Reset properties karena getContext bisa return cached state
+  ctx.strokeStyle = '#111111';
+  ctx.lineWidth   = 2.5;
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+  SIGN_SIGNED = false;
+  const ph = document.getElementById('sign-placeholder');
+  if(ph) ph.style.display = 'block';
+}
+
+async function doSubmitPaymentRequest(){
+  if(!SIGN_SIGNED){ alert('Tanda tangan wajib diisi sebelum mengirim.'); return; }
+  const btn=document.getElementById('btn-submit-pay');
+  btn.disabled=true; btn.textContent='⏳ Memproses & Generate PDF...';
+  try{
+    const canvas=document.getElementById('sign-canvas');
+    // Buat temp canvas dengan background putih agar JPEG tidak hitam
+    const tmpC=document.createElement('canvas');
+    tmpC.width=canvas.width; tmpC.height=canvas.height;
+    const tmpCtx=tmpC.getContext('2d');
+    tmpCtx.fillStyle='#FFFFFF';
+    tmpCtx.fillRect(0,0,tmpC.width,tmpC.height);
+    tmpCtx.drawImage(canvas,0,0);
+    const sig=tmpC.toDataURL('image/jpeg',0.6);
+    const res=await apiPost({
+      action:'submitPaymentRequest',
+      token:STATE.token,
+      kodePIC:STATE.kodePIC,
+      orderId:STATE.signOrderId,
+      signatureBase64:sig
+    });
+    if(res.success){
+      btn.textContent='✅ Berhasil! Membuka preview...';
+      // Tampilkan preview HTML rekap sebelum ke history
+      if(STATE.signPreviewData){ showRekapPreview(STATE.signPreviewData, sig); }
+      else { setTimeout(()=>{ showPage('history'); },1000); }
+    }else{
+      alert('❌ '+( res.message||'Gagal mengirim pengajuan'));
+      btn.disabled=false; btn.textContent='📨 Kirim Pengajuan ke Admin';
+    }
+  }catch(e){
+    alert('Terjadi kesalahan: '+e.message);
+    btn.disabled=false; btn.textContent='📨 Kirim Pengajuan ke Admin';
+  }
+}
+
+function showRekapPreview(data, sigDataUrl){
+  const frp=(n)=>n>0?'Rp '+n.toLocaleString('id-ID'):'—';
+  const days=['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const months=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  function fmtTs(ts){
+    if(!ts)return ts;
+    const[dp,tp]=ts.split(' ');
+    const[dd,mm,yyyy]=dp.split('/');
+    const d=new Date(parseInt(yyyy),parseInt(mm)-1,parseInt(dd));
+    return days[d.getDay()]+', '+parseInt(dd)+' '+months[d.getMonth()]+' '+yyyy+' jam '+(tp||'');
+  }
+
+  const sigImg=sigDataUrl?'<img src="'+sigDataUrl+'" style="max-width:120px;max-height:50px;display:block;margin:0 auto 4px;">':'<div style="height:50px;"></div>';
+
+  const sesiRows=(data.sesiList||[]).map(s=>
+    '<tr style="border-bottom:1px solid #eee;">' +
+    '<td style="padding:5px 6px;text-align:center;font-weight:500;">'+s.noSesi+'</td>' +
+    '<td style="padding:5px 6px;">Sesi Ke-'+s.noSesi+'</td>' +
+    '<td style="padding:5px 6px;">'+fmtTs(s.timestamp)+'</td>' +
+    '<td style="padding:5px 6px;text-align:center;">HADIR</td>' +
+    '<td style="padding:5px 6px;text-align:center;">'+(s.hasPhoto?'✓':'—')+'</td>' +
+    '</tr>'
+  ).join('');
+
+  const html=
+'<div style="text-align:center;background:#1E1C43;color:#fff;padding:10px;border-radius:6px 6px 0 0;margin:-16px -16px 12px;">'+
+'<p style="font-size:13px;font-weight:500;margin:0;">REKAP ABSENSI PELATIH / TERAPIS</p>'+
+'<p style="font-size:11px;opacity:.7;margin:2px 0 0;">ESSENTIAL FITNESS MANAGEMENT</p></div>'+
+'<table style="width:100%;font-size:11px;border-collapse:collapse;margin-bottom:10px;">'+
+'<tr><td style="padding:4px 0;color:#888;width:40%;">ID Order</td><td style="padding:4px 0;font-weight:500;">'+(data.orderId||'—')+'</td>'+
+'<td style="padding:4px 0;color:#888;width:35%;">Nama Lengkap PIC</td><td style="padding:4px 0;font-weight:500;">'+(data.namaLengkapPIC||'—')+'</td></tr>'+
+'<tr><td style="padding:4px 0;color:#888;">Nama Pendaftar</td><td style="padding:4px 0;">'+(data.namaPendaftar||'—')+'</td>'+
+'<td style="padding:4px 0;color:#888;">Nama Latihan</td><td style="padding:4px 0;">'+(data.namaLatihan||'—')+'</td></tr>'+
+'<tr><td style="padding:4px 0;color:#888;">Nama Klien</td><td style="padding:4px 0;font-weight:500;">'+(data.namaKlien||'—')+'</td>'+
+'<td style="padding:4px 0;color:#888;">Nama Paket</td><td style="padding:4px 0;">'+(data.namaProgram||'—')+'</td></tr>'+
+'<tr><td style="padding:4px 0;color:#888;">Hari</td><td style="padding:4px 0;">'+(data.hari||'—')+'</td>'+
+'<td style="padding:4px 0;color:#888;">Jumlah Sesi</td><td style="padding:4px 0;">'+(data.totalSesi||'—')+' Sesi</td></tr>'+
+'<tr><td style="padding:4px 0;color:#888;">Jam</td><td style="padding:4px 0;">'+(data.jam||'—')+'</td>'+
+'<td style="padding:4px 0;color:#888;">Fee Per Sesi</td><td style="padding:4px 0;">'+frp(data.biayaSesi)+'</td></tr>'+
+'<tr><td style="padding:4px 0;color:#888;">Lokasi</td><td style="padding:4px 0;font-size:10px;">'+(data.lokasi||'—')+'</td>'+
+'<td style="padding:4px 0;color:#888;">Masa Habis</td><td style="padding:4px 0;">'+(data.masaHabis||'—')+'</td></tr>'+
+'</table>'+
+'<p style="font-size:11px;font-weight:500;color:#1E1C43;margin:10px 0 6px;">Riwayat Sesi Kehadiran</p>'+
+'<table style="width:100%;font-size:10px;border-collapse:collapse;margin-bottom:12px;">'+
+'<thead><tr style="background:#1E1C43;color:#fff;">'+
+'<th style="padding:5px 6px;width:7%;">No.</th>'+
+'<th style="padding:5px 6px;width:14%;">Sesi</th>'+
+'<th style="padding:5px 6px;">Tanggal & Jam</th>'+
+'<th style="padding:5px 6px;width:14%;text-align:center;">Status</th>'+
+'<th style="padding:5px 6px;width:10%;text-align:center;">Foto</th>'+
+'</tr></thead><tbody>'+sesiRows+'</tbody></table>'+
+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:10px;">'+
+'<div>'+
+'<p style="background:#1E1C43;color:#fff;padding:4px 8px;margin:0 0 6px;border-radius:4px;font-size:10px;font-weight:500;">DETAIL PEMBAYARAN</p>'+
+'<table style="width:100%;border-collapse:collapse;font-size:10px;">'+
+'<tr><td style="padding:2px 0;color:#888;">Total Bayaran PIC</td><td style="font-weight:500;color:#1E1C43;">'+frp(data.totalBayaran)+'</td></tr>'+
+'<tr><td style="padding:2px 0;color:#888;">Nama Bank</td><td>'+(data.namaBank||'—')+'</td></tr>'+
+'<tr><td style="padding:2px 0;color:#888;">Rekening</td><td>'+(data.noRekening||'—')+'</td></tr>'+
+'<tr><td style="padding:2px 0;color:#888;">Atas Nama</td><td>'+(data.atasNama||'—')+'</td></tr>'+
+'</table></div>'+
+'<div>'+
+'<p style="background:#1E1C43;color:#fff;padding:4px 8px;margin:0 0 6px;border-radius:4px;font-size:10px;font-weight:500;">TANDA TANGAN PIC</p>'+
+'<div style="border:1px solid #ddd;border-radius:4px;padding:6px;text-align:center;min-height:70px;">'+
+sigImg+'<p style="font-size:9px;border-top:1px solid #000;padding-top:3px;margin:2px 0 0;">'+(data.namaLengkapPIC||data.namaPanggilanPIC||'—')+'</p>'+
+'</div></div></div>'+
+'<div style="margin-top:10px;background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:8px 10px;font-size:10px;color:#856404;text-align:center;">'+
+'⏳ Menunggu verifikasi admin · Kolom verifikasi admin akan terisi saat pembayaran dikonfirmasi'+
+'</div>';
+
+  document.getElementById('rekap-preview-content').innerHTML=html;
+  document.getElementById('rekap-preview-overlay').style.display='flex';
+}
+
+function closeRekapPreview(){
+  document.getElementById('rekap-preview-overlay').style.display='none';
+  showPage('history');
+}
+
+// ── SPLASH SCREEN PARTICLES ──────────────────
+(function(){
+  const c=document.getElementById('splash-canvas');
+  if(!c)return;
+  const ctx=c.getContext('2d');
+  let W,H,pts=[],raf;
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  resize();
+  window.addEventListener('resize',resize);
+  for(let i=0;i<55;i++){
+    pts.push({
+      x:Math.random()*window.innerWidth,
+      y:Math.random()*window.innerHeight,
+      vx:(Math.random()-.5)*.35,
+      vy:(Math.random()-.5)*.35,
+      r:Math.random()*1.4+.4,
+      o:Math.random()*.35+.08
+    });
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    // particles
+    pts.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0||p.x>W)p.vx*=-1;
+      if(p.y<0||p.y>H)p.vy*=-1;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle='rgba(224,89,69,'+p.o+')';ctx.fill();
+    });
+    // connections
+    for(let i=0;i<pts.length;i++){
+      for(let j=i+1;j<pts.length;j++){
+        const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d<110){
+          ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);
+          ctx.strokeStyle='rgba(30,28,67,'+(0.18*(1-d/110))+')';ctx.lineWidth=.6;ctx.stroke();
+        }
+      }
+    }
+    raf=requestAnimationFrame(draw);
+  }
+  draw();
+  // Stop when splash hides (saves battery)
+  const obs=new MutationObserver(()=>{
+    const ls=document.getElementById('loading-screen');
+    if(ls&&ls.style.display==='none'){cancelAnimationFrame(raf);obs.disconnect();}
+  });
+  obs.observe(document.getElementById('loading-screen'),{attributes:true,attributeFilter:['style']});
+})();
+
+window.addEventListener('load',init);
+</script>
+</body>
+</html>
