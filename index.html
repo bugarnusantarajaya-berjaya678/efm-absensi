@@ -603,6 +603,15 @@
   <div class="topbar"><button class="topbar-back" onclick="showPage('scan')"><span style="font-size:18px;line-height:1;">‹</span> Kembali</button><div class="topbar-title">Form Absensi</div><div style="width:36px;"></div></div>
   <div style="background:var(--navy);padding:12px 20px 32px;text-align:center;"><p style="color:rgba(255,255,255,.7);font-size:13px;font-weight:500;letter-spacing:0.1px;" id="absen-order-label">Order ID: —</p></div>
   <div class="card-body">
+
+    <!-- 1. Kode PIC -->
+    <div class="field"><label>Kode PIC</label><input type="text" id="absen-kode-pic" readonly></div>
+
+    <!-- 2. Nama PIC -->
+    <div class="field"><label>Nama PIC</label><input type="text" id="absen-nama-pic" readonly></div>
+
+    <!-- 3. Data Klien -->
+    <div class="section-title">Data Klien</div>
     <div id="absen-order-loading" class="info-box info-navy"><div class="info-box-icon">⏳</div><p>Memvalidasi Order ID...</p></div>
     <div id="absen-order-card" style="display:none;">
       <div class="order-card">
@@ -612,8 +621,9 @@
         <div class="order-row"><span>Jadwal</span><strong id="absen-jadwal">—</strong></div>
       </div>
     </div>
-    <div class="field"><label>Kode PIC</label><input type="text" id="absen-kode-pic" readonly></div>
-    <div class="field"><label>Nama PIC</label><input type="text" id="absen-nama-pic" readonly></div>
+
+    <!-- 4. GPS & Lokasi -->
+    <div class="section-title">GPS & Lokasi kamu sekarang</div>
     <div id="gps-status" class="gps-badge" style="background:#f1f5f9;"><span>📍</span><p style="font-size:12px;color:var(--gray);">Mendeteksi lokasi GPS...</p></div>
     <div id="gps-distance" class="gps-badge" style="display:none;background:#f1f5f9;margin-top:-8px;"><span>📏</span><p id="gps-distance-text" style="font-size:12px;color:var(--gray);">Menghitung jarak ke lokasi...</p></div>
     <!-- GPS INVALID BANNER — muncul langsung setelah badge GPS -->
@@ -624,7 +634,8 @@
       <div class="block-subtitle">Jarak kamu terlalu jauh dari lokasi klien.<br>Absensi hanya bisa dilakukan<br><strong>dalam radius 300 meter.</strong></div>
       <div class="block-hint">📍 Pergi ke lokasi klien terlebih dahulu, lalu refresh halaman ini</div>
     </div>
-    <!-- AREA FOTO — tersembunyi otomatis saat lokasi salah -->
+
+    <!-- 5. Foto Kehadiran -->
     <div id="foto-section">
       <div class="section-title">Foto Kehadiran</div>
       <img id="photo-preview" src="" alt="preview foto">
@@ -635,6 +646,8 @@
         <small>Foto wajib diupload</small>
       </div>
     </div>
+
+    <!-- 6. Submit -->
     <button class="btn btn-primary" id="btn-submit" onclick="submitAbsensi()">✅ Submit Absensi</button>
     <div class="msg" id="absen-msg"></div>
   </div>
